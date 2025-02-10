@@ -73,6 +73,8 @@ NOTE: Entries not starting with code quotes (`name`) can be added to document no
 
 ### IntelliJ Platform 2025.1
 
+`com.intellij.ide.actions.Switcher` class moved to package `com.intellij.platform.recentFiles.frontend` 
+
 
 ### Kotlin Plugin 2025.1
 
