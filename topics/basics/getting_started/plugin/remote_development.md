@@ -37,7 +37,7 @@ This article explains the terminology, motivation, and architecture behind remot
 
 * Responsive UX not affected by latency or insatiable connection issues
 * Some APIs naturally belong to either backend or frontend, and it is crucial they are working on a proper side. Take a file system events listener, for instance: it is likely that the plugin would like to observe events in the FS where the project source code is located, not on the client side.
-* Split Mode becomes more and more popular, and is demanded by JetBrains IDE customers, which in turn are potential plugin customers as well **\<TODO Give me some figures to share, not from the web, but from our DevEco or other surveys \- reliable data required to convince devs\>**
+* Split Mode becomes more and more popular, and is demanded by JetBrains IDE customers, which in turn are potential plugin customers as well.
 
 ## What Would Happen If You Choose to Do Nothing
 
@@ -109,7 +109,7 @@ The [modular plugin template](https://github.com/JetBrains/intellij-platform-mod
 
 To have one in your existing project, please do the following:
 
-1. Make sure you are using the IntelliJ Gradle plugin version 2.13.**\<TODO: paste proper version after it is released\>** or higher
+1. Make sure you are using the IntelliJ Gradle plugin version 2.14 or higher
 2. Call the `:generateSplitModeRunConfigurations` task via Execute Gradle Task action or via terminal
 3. Once finished, the task will produce a run configuration that can be selected in the run widget and debugged/run as usual
 
