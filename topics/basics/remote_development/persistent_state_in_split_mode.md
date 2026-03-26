@@ -4,7 +4,7 @@
 
 <link-summary>Synchronize persistent plugin settings correctly between frontend and backend in Split Mode.</link-summary>
 
-This article shows how to make a **`PersistentStateComponent`** synchronize correctly between the frontend and backend.
+This article shows how to make a **`PersistentStateComponent`** synchronize correctly between the frontend and the backend.
 
 At a high level, you will:
 
@@ -19,7 +19,7 @@ This setup is especially important in split mode, where settings may exist on bo
 
 Start by implementing your settings component as you normally would.
 
-If you use `SimplePersistentStateComponent`, it is a good idea to override `noStateLoaded()`. This helps handle the case where the remote side sends an empty state: instead of leaving the component in an unexpected state, you can explicitly reset it to defaults.
+If you use `SimplePersistentStateComponent`, it is a good idea to override `noStateLoaded()`. This helps handle the case in which the remote side sends an empty state: instead of leaving the component in an unexpected state, you can explicitly reset it to its defaults.
 
 ```kotlin
 @State(name = "MySettings", storages = [Storage("my-settings.xml")])
@@ -96,7 +96,7 @@ For project-level settings:
 
 ### Why This Is Required
 
-These declarations make the settings visible to the synchronization infrastructure from the start. Without them, the platform does not know that the settings should be included in the initial sync.
+These declarations make the settings visible to the synchronization infrastructure from the start. Without them, the platform does not know that the settings should be included in the initial synchronization.
 
 ## Choose the Right Sync Direction
 

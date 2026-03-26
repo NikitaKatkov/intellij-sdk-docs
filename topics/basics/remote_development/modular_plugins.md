@@ -4,7 +4,7 @@
 
 <primary-label ref="2025.3"/>
 
-<link-summary>Splitting plugin by modules to support remote development and other cases</link-summary>
+<link-summary>Split a plugin into modules to support remote development and other use cases.</link-summary>
 
 <tldr>
 
@@ -17,13 +17,13 @@
 A classic plugin has a single [class loader](plugin_class_loaders.md) which is used to load all classes of the plugin.
 This approach works well for many plugins, but there are cases when more granularity is needed:
 
-* To properly work in remote development mode, different parts of the plugin should be loaded in the backend and the frontend processes; these parts have different dependencies.
+* To work properly in remote development mode, different parts of the plugin should be loaded in the backend and frontend processes; these parts have different dependencies.
 * If some classes of a plugin `A` depend on classes from a plugin `B`, they should be loaded by a separate class loader to allow unloading the plugin `B` without restarting the IDE.
 
 In such cases, it's possible to use the new modular plugin format: Plugin Model Version 2.
 
 > The new format is still experimental and may change in the future.
-> It's not recommended to use it for cases other than writing plugins for remote development where the new format is required.
+> It is not recommended for cases other than writing plugins for remote development, where the new format is required.
 >
 > Modular plugins can be developed only with [](tools_intellij_platform_gradle_plugin.md).
 >
@@ -74,7 +74,7 @@ Source code and resource files of modules must be located in separate Gradle pro
 
 ## Module Descriptor File
 
-A module must have a descriptor file with the name equal to the module name and <path>xml</path> extension (for example, <path>example.my.module.xml</path>, located directly in the <path>main/resources</path> directory of the corresponding Gradle project (**not in** <path>META-INF</path> directory!).
+A module must have a descriptor file whose name is equal to the module name and has the <path>xml</path> extension (for example, <path>example.my.module.xml</path>), located directly in the <path>main/resources</path> directory of the corresponding Gradle project (**not in** the <path>META-INF</path> directory!).
 
 The module descriptor file uses the same format as the [plugin configuration file](plugin_configuration_file.md), but only the following top-level tags are allowed:
 * `<resource-bundle>`
@@ -105,7 +105,7 @@ If no dependencies are specified, the module will always be loaded when the plug
 ### Class Loaders
 
 Each module has its own class loader.
-The class loader has class loaders of modules and plugins specified in `<dependencies>` tag of the module descriptor as its parents, so it delegates loading of classes to them if they aren't found in the module itself.
+The class loader has the class loaders of modules and plugins specified in the `<dependencies>` tag of the module descriptor as its parents, so it delegates loading of classes to them if they aren't found in the module itself.
 Also, the core class loader of the IntelliJ Platform is automatically added as a parent class loader.
 
 If a classic plugin declares a dependency on a modular plugin using `<depends>` tag, class loaders of all plugin modules will be added as parent class loaders.
@@ -122,4 +122,4 @@ However, the following top-level tags related to registration of classes aren't 
 
 Also, `<depends>` tags are not allowed.
 Dependencies must be specified in the module descriptor files using `<dependencies>` tag.
-The IDE will automatically treat dependencies of modules marked as 'required' as necessary dependencies of the plugin and will suggest installing or enabling corresponding plugins when the plugin is being installed.
+The IDE will automatically treat dependencies of modules marked as `required` as necessary dependencies of the plugin and will suggest installing or enabling corresponding plugins when the plugin is installed.

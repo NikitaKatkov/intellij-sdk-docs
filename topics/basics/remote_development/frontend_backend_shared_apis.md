@@ -11,7 +11,7 @@ If a feature needs a different placement, review the specific API behavior and v
 
 The IntelliJ DevKit plugin is expected to provide inspections for inappropriate API usage.
 
-See also [](modular_plugins.md) and [](split_mode_feature_development.md).
+See also [Modular Plugins](modular_plugins.md) and [Implementing a Feature for Split Mode](split_mode_feature_development.md).
 
 ## Frontend APIs
 

@@ -4,7 +4,7 @@
 
 <link-summary>Set up RPC between shared, frontend, and backend plugin modules in Split Mode.</link-summary>
 
-This article walks through how remote call (RPC) is set up and refers to code in the publicly available [modular plugin template](https://github.com/JetBrains/intellij-platform-modular-plugin-template). The plugin is split into three modules: **shared, frontend, and backend**. Let’s start with an explanation of how the module dependencies are configured.
+This article walks through how remote calls (RPC) are set up and refers to code in the publicly available [modular plugin template](https://github.com/JetBrains/intellij-platform-modular-plugin-template). The plugin is split into three modules: **shared, frontend, and backend**. Let’s start with an explanation of how the module dependencies are configured.
 
 ### Shared module
 
@@ -105,13 +105,13 @@ interface ChatRepositoryRpcApi : RemoteApi<Unit> {
 The rules for creating an RPC interface are:
 
 1. Add `@Rpc` annotation to the interface.
-2. All functions must be suspend (https://kotlinlang.org/docs/coroutines-basics.html\#suspending-functions).
-3. All parameters and return types must be `@Serializable`. They are essentially data transfer objects (DTO) one might be familiar with from client-server apps development.
+2. All functions must be `suspend` (https://kotlinlang.org/docs/coroutines-basics.html\#suspending-functions).
+3. All parameters and return types must be `@Serializable`. They are essentially data transfer objects (DTOs) one might be familiar with from client-server app development.
     * Primitives, `String`, `Flow`, `Deferred` are serializable by default.
     * Enums are not serializable by default. Mark them as `@Serializable` explicitly.
     * Classes must be annotated with `@Serializable` and must contain only other serializable fields
 4. Introduce `suspend getInstanceAsync()` so the frontend can easily acquire the instance.
-5. Implement RPC interface on the backend
+5. Implement the RPC interface on the backend.
 
 Add a class implementing the RPC interface in the backend module:
 
@@ -173,11 +173,11 @@ ChatRepositoryRpcApi.getInstance().getMessagesFlow(project.projectId())
 ChatRepositoryRpcApi.getInstance().sendMessage(project.projectId(), messageContent)
 ```
 
-Take into account that all `getInstanceAsync()`, `getMessagesFlow()`, and `sendMessage()` functions are `suspend`, so they must be called in some coroutine context.
+Note that all `getInstanceAsync()`, `getMessagesFlow()`, and `sendMessage()` functions are `suspend`, so they must be called in some coroutine context.
 
 Implementation detail:
 
-Should there be some problem while trying to execute the RPC, the call will fail with a RpcClientException. For instance if the client tries to execute the call while the backend is not fully initialized, or the network problem happens, or we restart the backend, and during the restart a call gets executed.
+If some problem occurs while trying to execute the RPC, the call will fail with a RpcClientException. For instance, this may happen if the client tries to execute the call while the backend is not fully initialized, if a network problem occurs, or if the backend is restarted while a call is being executed.
 
 Such errors can be mitigated by using the `fleet.rpc.client.DurableKt.durable` wrapper function.
 
@@ -189,7 +189,7 @@ durable {
 }
 ```
 
-It will retry the call in case the backend RPC implementation discovery fails. Consider employing it especially when working with long-living RPC flows, so that an exception there will be handled properly and the corresponding feature will remain working.
+It will retry the call in case discovery of the backend RPC implementation fails. Consider employing it especially when working with long-lived RPC flows, so that an exception there is handled properly and the corresponding feature keeps working.
 
 ## RPC Examples
 
@@ -378,7 +378,7 @@ IntelliJ Platform provides a way to pass some commonly used classes through RPC:
 3. `VirtualFile` can be serialized and deserialized by `VirtualFile.rpcId()` and `VirtualFileId.virtualFile()` functions.
 4. `Icon` can be serialized and deserialized by `Icon.rpcId()` and `IconId.icon()` functions.
 
-Pay attention that these objects are not fully serializable, so the frontend only receives parts of the backend object.
+Note that these objects are not fully serializable, so the frontend only receives parts of the backend object.
 If possible, use only IDs on the frontend and work with the full objects on the backend side.
 
 **Q:** What to do with AbstractMethodError?
