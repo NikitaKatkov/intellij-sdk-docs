@@ -12,6 +12,12 @@
 
 </tldr>
 
+The documentation uses the following basic terms:
+
+- **Remote Development**: a workflow where the IDE frontend connects to a backend running locally or on another machine
+- **Split Mode**: essentially a synonym to Remote Development, a JetBrains IDE setup where the frontend and backend run as separate processes
+- **Split Plugin**: a plugin consisting of dedicated frontend, backend, and shared modules so each part runs on the appropriate Split Mode side
+
 Remote development changes where plugin code runs.
 In Split Mode, the frontend process renders the user interface, while the backend process hosts the project model, indexing, analysis, execution, and other heavy work.
 The backend may run on the same machine, on another host, in a container, or in the cloud.
