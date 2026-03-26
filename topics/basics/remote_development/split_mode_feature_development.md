@@ -21,7 +21,7 @@ This article shows a step-by-step instruction on how to refactor the existing In
 
 1. Identify or create necessary plugin modules.
 
-    * Please refer to the [modular plugin template](https://github.com/JetBrains/intellij-platform-modular-plugin-template) for module structure and necessary dependencies and **\<TODO proper link to the Article 2\>** for modular plugin concept description
+    * Please refer to the [modular plugin template](https://github.com/JetBrains/intellij-platform-modular-plugin-template) for module structure and necessary dependencies and [Modular plugins](modular_plugins.md) for modular plugin concept description
     * Create at least those three modules:
         1. \<YourPlugin\>.Shared \- with little as possible dependencies
         2. \<YourPlugin\>.Backend \- with intellij.platform.backend dependency
@@ -35,7 +35,7 @@ This article shows a step-by-step instruction on how to refactor the existing In
 
 2. Put the existing or newly written code into appropriate module types:
     * Identify what kind of features dominates in your plugin
-        1. See which APIs it uses more and which type of module they belong to by referring to the **\<TODO proper link to the Article 4\>**
+        1. See which APIs it uses more and which type of module they belong to by referring to [List of Frontend/Backend/Shared APIs in IntelliJ Platform](frontend_backend_shared_apis.md)
         2. If there is mostly backend extensions in the plugin, consider it backend functionality, otherwise \- frontend
     * Extract your existing functionality you have just analyzed into the module type determined during the previous step
     * See some APIs are still used in a wrong module type, that’s expected and will be addressed in the due course
@@ -67,11 +67,11 @@ This article shows a step-by-step instruction on how to refactor the existing In
     * Introduce RPC implementation in the backend plugin module
         1. RPC implementation must implement the corresponding RPC interface
         2. It must be registered in the backend module xml descriptor via the *platform.rpc.backend.remoteApiProvider* extension point
-    * For more details about RPC refer to the **\<TODO proper link to the Article 3\>**
+    * For more details about RPC refer to [RPC guideline](rpc.md)
     * Use DTOs created on step 3 as input parameters and return values. Get back to step 3 if some data is missing.
     * Call the RPC where the backend data is required
-        1. It is a crucial detail that RPC calls are always suspending. It could be that one can not allow using the suspending code in a particular place in the frontend functionality. Either because it’s an old implementation written in java, and it’s not ready for suspend functions at all, or because the data must be available immediately, otherwise causing poor UX or even freezes. Remember that a proper UX is one of the main reasons we initiated the entire splitting process for\! **\<TODO
-           proper link to the Article 1\>**
+        1. It is a crucial detail that RPC calls are always suspending. It could be that one can not allow using the suspending code in a particular place in the frontend functionality. Either because it’s an old implementation written in java, and it’s not ready for suspend functions at all, or because the data must be available immediately, otherwise causing poor UX or even freezes.
+           Remember that a proper UX is one of the main reasons we initiated the entire splitting process for, see the [split-mode introduction](remote_development.md).
         2. You can’t call RPC on the event dispatch thread (EDT). Avoid wrapping it into runBlockingCancellable unless absolutely necessary and you understand all the consequences of such decision (namely, blocking the caller thread, breaking the structured concurrency and suspending api concepts)
         3. Consider using the existing platform abstraction for shared state as a reference: [FlowWithHistory.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/lang-impl/src/com/intellij/build/FlowWithHistory.kt)
     * RPC is designed to be initiated by the frontend, which implies users always interact with one of the IDE UI components that naturally belong to the frontend. In some cases, you may want to initiate some UI displaying from within the backend code, however. For instance, a long backend process wants to show a notification after it finishes. Consider using the RemoteTopic API in such cases
@@ -82,7 +82,7 @@ This article shows a step-by-step instruction on how to refactor the existing In
 
    *Expected outcome: your frontend UI exchanges serializable data with backend via RPC or RemoteTopic API*
 
-5. After having all infrastructure implemented, it’s now time to verify the feature behaviour and polish it. Refer to the guide on how to manually test the split mode, check monolith IDE as well \- it is expected the behaviour is exactly the same. **\<TODO proper link to the Article 1\>**
+5. After having all infrastructure implemented, it’s now time to verify the feature behaviour and polish it. Refer to [Introduction into Split Mode / Remote Development](remote_development.md) on how to manually test the split mode, check monolith IDE as well \- it is expected the behaviour is exactly the same.
    *Expected outcome: the code is valid from the current guide POV, and the behaviour is as expected in both split mode and monolith*
 6. Now the general functionality works as expected, consider reviewing the list of frequently occurring problems and suggested solutions for them. Depending on the feature specifics, you might not necessarily need to tune the code.
     * Handle reconnection: wrap RPC calls into *durable{...};* this wrapper will restart the call should a network error occur. Be careful with any side effects your code inside the durable block produces \- ideally, avoid them.
@@ -101,7 +101,7 @@ This article shows a step-by-step instruction on how to refactor the existing In
 
    *Expected outcome: known issues are mitigated and now the plugin quality is good enough, finally.*
 
-7. Fix the split feature behaviour and quality with unit and integration tests, should you not have used the TDD approach earlier.  **\<TODO proper link to the Article 1, specifically testing description\>**
+7. Fix the split feature behaviour and quality with unit and integration tests, should you not have used the TDD approach earlier. See the [split-mode testing section](remote_development.md#how-to-run-tests-in-split-mode-with-gradle).
    We suggest to pay attention to:
 
 * Data transformations: correct de/serialization
