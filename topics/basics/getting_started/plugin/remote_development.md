@@ -6,7 +6,7 @@
 
 <tldr>
 
-**Reference**: [](modular_plugins.md), [](split_mode_feature_development.md), [](rpc.md), [](frontend_backend_shared_apis.md), [](persistent_state_in_split_mode.md)
+**Reference**: [modular plugin format](modular_plugins.md), [Split Mode feature guide](split_mode_feature_development.md), [RPC guide](rpc.md), [API placement guide](frontend_backend_shared_apis.md), [persistent state synchronization](persistent_state_in_split_mode.md)
 
 **Code**: [IntelliJ Platform Modular Plugin Template](https://github.com/JetBrains/intellij-platform-modular-plugin-template), [Making an IntelliJ Plugin Remote Development-friendly](https://www.youtube.com/watch?v=T2VvY6kgALY)
 
@@ -78,10 +78,10 @@ In the monolithic IDE, the whole machinery works inside a single process, and th
 
 ## How to Run the IDE in Split Mode with Gradle
 
-IntelliJ Platform Gradle Plugin (2.x) is required to build plugins with split mode support. In the \``intellijPlatform`\` section, there are two special options:
+IntelliJ Platform Gradle Plugin (2.x) is required to build plugins with split mode support. In the `intellijPlatform` section, there are two special options:
 
-* \``splitMode`\` to indicate that the target IDE must run in split mode
-* \``splitModeTarget`\` to indicate where (backend full-fledged or frontend) your plugin must be installed
+* `splitMode` to indicate that the target IDE must run in split mode
+* `splitModeTarget` to indicate where (backend full-fledged or frontend) your plugin must be installed
 
 ```kotlin
 intellijPlatform {
@@ -98,26 +98,26 @@ A) Plugin’s business logic can be tested by regular unit tests using the intel
 
 You may put small tests that verify a specific class functionality in any content module. However, should you decide to test the plugin altogether, kindly put the test classes into the root plugin module \- this is necessary for correct classpath assembly which will include the plugin.xml file and properly register all plugin extensions from all content modules
 
-B) Plugin’s UI in split mode can be tested by integrated UI tests framework, see [Integration Tests: UI Testing | IntelliJ Platform Plugin SDK](https://plugins.jetbrains.com/docs/intellij/integration-tests-ui.html#interaction-with-components) . There are publicly available tests that can be used for reference,
-see [https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples.plugins/src/integrationTest/kotlin/PluginTest.kt](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples.plugins/src/integrationTest/kotlin/PluginTest.kt) .
+B) Plugin’s UI in split mode can be tested by integrated UI tests framework, see [Integration Tests: UI Testing](https://plugins.jetbrains.com/docs/intellij/integration-tests-ui.html#interaction-with-components). There are publicly available tests that can be used for reference,
+see [PluginTest.kt example](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples.plugins/src/integrationTest/kotlin/PluginTest.kt).
 
 ## How to Debug the IDE in Split Mode with Gradle
 
-To be able to run and debug your plugin, you will need to use a run configuration Run IDE (Split Mode) which will start both frontend and backend processes locally.
+To be able to run and debug your plugin, you will need to use a run configuration <control>Run IDE (Split Mode)</control> which will start both frontend and backend processes locally.
 
-The plugin template [https://github.com/JetBrains/intellij-platform-modular-plugin-template](https://github.com/JetBrains/intellij-platform-modular-plugin-template) already provides such a configuration out of the box.
+The [modular plugin template](https://github.com/JetBrains/intellij-platform-modular-plugin-template) already provides such a configuration out of the box.
 
 To have one in your existing project, please do the following:
 
 1. Make sure you are using the IntelliJ Gradle plugin version 2.13.**\<TODO: paste proper version after it is released\>** or higher
-2. Call the *:generateSplitModeRunConfigurations* task via Execute Gradle Task action or via terminal
+2. Call the `:generateSplitModeRunConfigurations` task via Execute Gradle Task action or via terminal
 3. Once finished, the task will produce a run configuration that can be selected in the run widget and debugged/run as usual
 
 ## How to Test Split Mode Manually and Emulate Latency
 
 Deploying the backend to a real remote machine is not the easiest and fastest way to check that the feature has been properly split. The major problem with features working in Split Mode IDE is that they are exposed to latency issues. This could be easily emulated within a locally running Split Mode.
 
-1. Enable internal mode in the IDE your plugin is being tested against (via specifying the system property *\-[Didea.is](http://Didea.is).internal=true*)
+1. Enable internal mode in the IDE your plugin is being tested against by specifying the system property `-Didea.is.internal=true`
 2. Open the **Split Mode** widget in the upper left corner of the target IDE, switch to the **Connection Config (internal)** tab and tick the **Enable Connection Widget** checkbox
 3. Specify a custom reasonably big value in the **Direct Ping** field \- this will delay ALL communication that goes through the RPC in the entire IDE. Only be careful with setting too big values \- you’ll experience a really bad UX, if a particular feature is not yet properly split. Thus you’ll be able to experience a close to real feeling of the features provided by your plugin. Should you notice no annoying or incorrect behaviour, you have likely done a good job refactoring your plugin\!
    Congrats :)

@@ -6,7 +6,7 @@
 
 <tldr>
 
-**Reference**: [](remote_development.md), [](modular_plugins.md), [](rpc.md), [](frontend_backend_shared_apis.md), [](persistent_state_in_split_mode.md)
+**Reference**: [remote development overview](remote_development.md), [modular plugin format](modular_plugins.md), [RPC guide](rpc.md), [API placement guide](frontend_backend_shared_apis.md), [persistent state synchronization](persistent_state_in_split_mode.md)
 
 **Code**: [IntelliJ Platform Modular Plugin Template](https://github.com/JetBrains/intellij-platform-modular-plugin-template)
 
@@ -21,7 +21,7 @@ This article shows a step-by-step instruction on how to refactor the existing In
 
 1. Identify or create necessary plugin modules.
 
-    * Please refer to the plugin template [https://github.com/JetBrains/intellij-platform-modular-plugin-template](https://github.com/JetBrains/intellij-platform-modular-plugin-template) for module structure and necessary dependencies and **\<TODO proper link to the Article 2\>** for modular plugin concept description
+    * Please refer to the [modular plugin template](https://github.com/JetBrains/intellij-platform-modular-plugin-template) for module structure and necessary dependencies and **\<TODO proper link to the Article 2\>** for modular plugin concept description
     * Create at least those three modules:
         1. \<YourPlugin\>.Shared \- with little as possible dependencies
         2. \<YourPlugin\>.Backend \- with intellij.platform.backend dependency
@@ -73,12 +73,12 @@ This article shows a step-by-step instruction on how to refactor the existing In
         1. It is a crucial detail that RPC calls are always suspending. It could be that one can not allow using the suspending code in a particular place in the frontend functionality. Either because it’s an old implementation written in java, and it’s not ready for suspend functions at all, or because the data must be available immediately, otherwise causing poor UX or even freezes. Remember that a proper UX is one of the main reasons we initiated the entire splitting process for\! **\<TODO
            proper link to the Article 1\>**
         2. You can’t call RPC on the event dispatch thread (EDT). Avoid wrapping it into runBlockingCancellable unless absolutely necessary and you understand all the consequences of such decision (namely, blocking the caller thread, breaking the structured concurrency and suspending api concepts)
-        3. Consider using the existing platform abstraction for shared state as a reference [https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/lang-impl/src/com/intellij/build/FlowWithHistory.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/lang-impl/src/com/intellij/build/FlowWithHistory.kt)
+        3. Consider using the existing platform abstraction for shared state as a reference: [FlowWithHistory.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/lang-impl/src/com/intellij/build/FlowWithHistory.kt)
     * RPC is designed to be initiated by the frontend, which implies users always interact with one of the IDE UI components that naturally belong to the frontend. In some cases, you may want to initiate some UI displaying from within the backend code, however. For instance, a long backend process wants to show a notification after it finishes. Consider using the RemoteTopic API in such cases
         1. Declare a project- or application-level topic in the shared plugin module by using ProjectRemoteTopic() or ApplicationRemoteTopic() method respectively
         2. Subscribe to the topic in the frontend plugin module via the *platform.rpc.applicationRemoteTopicListener* extension point \- here you may call a code for displaying the desired notification, for instance
         3. Push the Serializable DTO class into the topic in the backend plugin module where necessary \- as soon as the DTO gets delivered, your frontend topic listener will do its job
-        4. Example: [https://github.com/JetBrains/intellij-community/blob/1b63f9058d6285980c1eac14b8b59fca251751b7/platform/structure-view-impl/frontend/src/ShowStructurePopupRemoteTopicListener.kt](https://github.com/JetBrains/intellij-community/blob/1b63f9058d6285980c1eac14b8b59fca251751b7/platform/structure-view-impl/frontend/src/ShowStructurePopupRemoteTopicListener.kt)
+        4. Example: [ShowStructurePopupRemoteTopicListener.kt](https://github.com/JetBrains/intellij-community/blob/1b63f9058d6285980c1eac14b8b59fca251751b7/platform/structure-view-impl/frontend/src/ShowStructurePopupRemoteTopicListener.kt)
 
    *Expected outcome: your frontend UI exchanges serializable data with backend via RPC or RemoteTopic API*
 
@@ -86,18 +86,18 @@ This article shows a step-by-step instruction on how to refactor the existing In
    *Expected outcome: the code is valid from the current guide POV, and the behaviour is as expected in both split mode and monolith*
 6. Now the general functionality works as expected, consider reviewing the list of frequently occurring problems and suggested solutions for them. Depending on the feature specifics, you might not necessarily need to tune the code.
     * Handle reconnection: wrap RPC calls into *durable{...};* this wrapper will restart the call should a network error occur. Be careful with any side effects your code inside the durable block produces \- ideally, avoid them.
-      Example [https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles/frontend/src/com/intellij/platform/recentFiles/frontend/model/RecentFileModelSynchronizer.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles/frontend/src/com/intellij/platform/recentFiles/frontend/model/RecentFileModelSynchronizer.kt)
+      Example: [RecentFileModelSynchronizer.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles/frontend/src/com/intellij/platform/recentFiles/frontend/model/RecentFileModelSynchronizer.kt)
     * Register actions in proper plugin modules
         1. We strongly encourage registering actions on the frontend side, if possible. The possibility is determined by the action's update method: should it require backend entities, the action belongs to the backend then. Otherwise \- frontend.
         2. Frontend actions are rendered immediately and do not bring delays into context menu/popups/toolbars displaying. Should the frontend action decide to touch backend entities in the AnAction.actionPerformed method, it is completely fine to call RPC there.
         3. *(\*\*\*advanced\*\*\*) In some complicated cases action.update() method might require both frontend and backend entities available simultaneously. Such cases must be addressed individually depending on a specific feature description. There are examples of shared eventually synchronized state implementations in the IntelliJ Platform codebase, for instance in
-           the [https://github.com/JetBrains/intellij-community/tree/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles](https://github.com/JetBrains/intellij-community/tree/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles) . There an eventually-consistent mutable shared state is implemented to make it possible to access the data model on both frontend and backend with no RPC calls required for the access*
-        4. Consider approaching us on the platform forum [https://platform.jetbrains.com](https://platform.jetbrains.com) to discuss what could be done in your specific case.
+           the [Recent Files implementation](https://github.com/JetBrains/intellij-community/tree/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles). There an eventually-consistent mutable shared state is implemented to make it possible to access the data model on both frontend and backend with no RPC calls required for the access*
+        4. Consider approaching us on the [JetBrains Platform Forum](https://platform.jetbrains.com) to discuss what could be done in your specific case.
     * Display empty state: UI must render without waiting for backend; show placeholders and progressively fill in data.
     * Load large state: avoid “send everything at once” RPC implementations; use paging/lazy loading, and request only what the UI needs now.
-      Example: [https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles/backend/src/com/intellij/platform/recentFiles/backend/BackendRecentFileEventsModel.kt\#L164](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles/backend/src/com/intellij/platform/recentFiles/backend/BackendRecentFileEventsModel.kt#L164)
+      Example: [BackendRecentFileEventsModel.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles/backend/src/com/intellij/platform/recentFiles/backend/BackendRecentFileEventsModel.kt#L164)
     * Do not load data too frequently: avoid chatty RPC (per keystroke, per scroll tick). Batch requests, cache results, debounce UI events.
-      Example: [https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles/frontend/src/com/intellij/platform/recentFiles/frontend/RecentFilesEditorTypingListener.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles/frontend/src/com/intellij/platform/recentFiles/frontend/RecentFilesEditorTypingListener.kt)
+      Example: [RecentFilesEditorTypingListener.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles/frontend/src/com/intellij/platform/recentFiles/frontend/RecentFilesEditorTypingListener.kt)
 
    *Expected outcome: known issues are mitigated and now the plugin quality is good enough, finally.*
 
@@ -109,4 +109,4 @@ This article shows a step-by-step instruction on how to refactor the existing In
 * Proper behaviour under latency: artificial delay in a test implementation backend service does not bring freezes or broken UX
   *Expected outcome: the feature implementation has tests covering its correct behaviour in remote and local scenarios.*
 
-Should you have any questions or uncertainties regarding the splitting process, you are very welcome on our forum [https://platform.jetbrains.com](https://platform.jetbrains.com) \- we’ll try to provide as much help as possible there, reconsider and adjust what is inconvenient for you.
+Should you have any questions or uncertainties regarding the splitting process, you are very welcome on our [JetBrains Platform Forum](https://platform.jetbrains.com) \- we’ll try to provide as much help as possible there, reconsider and adjust what is inconvenient for you.

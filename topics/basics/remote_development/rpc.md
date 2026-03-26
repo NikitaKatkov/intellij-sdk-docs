@@ -4,7 +4,7 @@
 
 <link-summary>Set up RPC between shared, frontend, and backend plugin modules in Split Mode.</link-summary>
 
-This article walks through how remote call (RPC) is set up and refers to a code in the publicly available plugin template, see [https://github.com/JetBrains/intellij-platform-modular-plugin-template](https://github.com/JetBrains/intellij-platform-modular-plugin-template). The plugin is split into three modules: **shared, frontend, and backend**. Let’s start with an explanation of how the module dependencies are configured.
+This article walks through how remote call (RPC) is set up and refers to code in the publicly available [modular plugin template](https://github.com/JetBrains/intellij-platform-modular-plugin-template). The plugin is split into three modules: **shared, frontend, and backend**. Let’s start with an explanation of how the module dependencies are configured.
 
 ### Shared module
 
@@ -13,14 +13,14 @@ The shared module defines the RPC interface. It needs the `rpc` and `kotlinx.ser
 ```kotlin
 // shared/build.gradle.kts
 plugins {
-    id("rpc")
-    id("org.jetbrains.kotlin.jvm")
-    id("org.jetbrains.kotlin.plugin.serialization")
+  id("rpc")
+  id("org.jetbrains.kotlin.jvm")
+  id("org.jetbrains.kotlin.plugin.serialization")
 }
 dependencies {
-    intellijPlatform {
-        intellijIdea(libs.versions.intellij.platform)
-    }
+  intellijPlatform {
+    intellijIdea(libs.versions.intellij.platform)
+  }
 }
 ```
 
@@ -31,17 +31,17 @@ The frontend module depends on `:shared` and needs the `rpc` plugin as well:
 ```kotlin
 // frontend/build.gradle.kts
 plugins {
-    id("rpc")
-    id("org.jetbrains.kotlin.jvm")
-    id("org.jetbrains.kotlin.plugin.serialization")
+  id("rpc")
+  id("org.jetbrains.kotlin.jvm")
+  id("org.jetbrains.kotlin.plugin.serialization")
 }
 dependencies {
-    intellijPlatform {
-        intellijIdea(libs.versions.intellij.platform)
-        bundledModule("intellij.platform.frontend")
-        // ...
-    }
-    compileOnly(project(":shared"))
+  intellijPlatform {
+    intellijIdea(libs.versions.intellij.platform)
+    bundledModule("intellij.platform.frontend")
+    // ...
+  }
+  compileOnly(project(":shared"))
 }
 ```
 
@@ -52,19 +52,19 @@ The backend module depends on `:shared` and requires `intellij.platform.kernel.b
 ```kotlin
 // backend/build.gradle.kts
 plugins {
-    id("rpc")
-    id("org.jetbrains.kotlin.jvm")
-    id("org.jetbrains.kotlin.plugin.serialization")
+  id("rpc")
+  id("org.jetbrains.kotlin.jvm")
+  id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 dependencies {
-    intellijPlatform {
-        intellijIdea(libs.versions.intellij.platform)
-        bundledModule("intellij.platform.kernel.backend")
-        bundledModule("intellij.platform.rpc.backend")
-        bundledModule("intellij.platform.backend")
-    }
-    compileOnly(project(":shared"))
+  intellijPlatform {
+    intellijIdea(libs.versions.intellij.platform)
+    bundledModule("intellij.platform.kernel.backend")
+    bundledModule("intellij.platform.rpc.backend")
+    bundledModule("intellij.platform.backend")
+  }
+  compileOnly(project(":shared"))
 }
 ```
 
@@ -159,7 +159,7 @@ Register the provider in `modular.plugin.backend.xml`:
 
     <extensions defaultExtensionNs="com.intellij">
         <platform.rpc.backend.remoteApiProvider
-            implementation="org.jetbrains.plugins.template.BackendRpcApiProvider"/>
+            implementation="com.example.BackendRpcApiProvider"/>
     </extensions>
 </idea-plugin>
 ```
@@ -195,7 +195,7 @@ It will retry the call in case the backend RPC implementation discovery fails. C
 
 ### Subscription to the Backend State
 
-Let’s have a look at the reference implementation from the plugin template [https://github.com/JetBrains/intellij-platform-modular-plugin-template](https://github.com/JetBrains/intellij-platform-modular-plugin-template) .
+Let’s have a look at the reference implementation from the [modular plugin template](https://github.com/JetBrains/intellij-platform-modular-plugin-template).
 
 There, `BackendChatRepositoryModel` holds a `MutableStateFlow` of messages on the backend:
 
@@ -364,8 +364,7 @@ You can read more about this approach in the `ApplicationRemoteTopic` and `Proje
 **Q:** What classes can be passed through RPC?
 
 **A:** All parameters and returned values must be `@Serializable`.
-You can read more about `kotlinx.serialization` in its documentation:
-`https://kotlinlang.org/docs/serialization.html`
+You can read more about `kotlinx.serialization` in the [Kotlin serialization documentation](https://kotlinlang.org/docs/serialization.html).
 
 * Primitives, `String`, `Flow`, `Deferred` are serializable by default.
 * Enums are not serializable by default. Mark them as `@Serializable` as well.
@@ -385,7 +384,9 @@ If possible, use only IDs on the frontend and work with the full objects on the 
 **Q:** What to do with AbstractMethodError?
 
 ```
-java.lang.AbstractMethodError: Receiver class InterfaceApiClientStub does not define or inherit an implementation of the resolved method 'abstract void foo()' of interface InterfaceApi.
+java.lang.AbstractMethodError: Receiver class InterfaceApiClientStub
+does not define or inherit an implementation of the resolved method
+'abstract void foo()' of interface InterfaceApi.
 ```
 
 **A:** Make sure that all the functions in the interface are `suspend`.

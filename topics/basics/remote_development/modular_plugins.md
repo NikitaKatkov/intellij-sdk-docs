@@ -1,13 +1,14 @@
 <!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license. -->
 
 # Modular Plugins (Experimental)
+
 <primary-label ref="2025.3"/>
 
 <link-summary>Splitting plugin by modules to support remote development and other cases</link-summary>
 
 <tldr>
 
-**Reference**: [](remote_development.md), [](split_mode_feature_development.md), [](rpc.md), [](frontend_backend_shared_apis.md), [](persistent_state_in_split_mode.md)
+**Reference**: [remote development overview](remote_development.md), [Split Mode feature guide](split_mode_feature_development.md), [RPC guide](rpc.md), [API placement guide](frontend_backend_shared_apis.md), [persistent state synchronization](persistent_state_in_split_mode.md)
 
 **Code**: [IntelliJ Platform Modular Plugin Template](https://github.com/JetBrains/intellij-platform-modular-plugin-template)
 
@@ -15,6 +16,7 @@
 
 A classic plugin has a single [class loader](plugin_class_loaders.md) which is used to load all classes of the plugin.
 This approach works well for many plugins, but there are cases when more granularity is needed:
+
 * To properly work in remote development mode, different parts of the plugin should be loaded in the backend and the frontend processes; these parts have different dependencies.
 * If some classes of a plugin `A` depend on classes from a plugin `B`, they should be loaded by a separate class loader to allow unloading the plugin `B` without restarting the IDE.
 
@@ -29,24 +31,25 @@ In such cases, it's possible to use the new modular plugin format: Plugin Model 
 
 ## Typical Split Mode Layout
 
-A split  plugin commonly contains at least three modules:
+A split plugin commonly contains at least three modules:
 
 - shared module: DTOs, RPC interfaces, remote topics, and other code used on both sides
 - frontend module: user interface, editor-side interactions, and other latency-sensitive behavior
 - backend module: PSI, VFS, indexing, project model, execution, and other project-local logic
 
-See [](split_mode_feature_development.md) for the migration flow, [](rpc.md) for communication between modules, and [](frontend_backend_shared_apis.md) for common API placement guidance.
+See the [Split Mode feature guide](split_mode_feature_development.md) for the migration flow, the [RPC guide](rpc.md) for communication between modules, and the [API placement guide](frontend_backend_shared_apis.md) for common API placement guidance.
 
 ## Plugin Modules
 
 A plugin consists of one or more modules registered in the `content` tag in the [plugin descriptor file](plugin_configuration_file.md):
 
 ```xml
+
 <content>
-  <module name="example.core" loading="required" />
-  <module name="example.optional" />
+  <module name="example.core" loading="required"/>
+  <module name="example.optional"/>
   <module name="example.backend"
-          required-if-available="intellij.platform.backend" />
+          required-if-available="intellij.platform.backend"/>
 </content>
 ```
 
@@ -55,6 +58,7 @@ The name of the module is specified by a required `name` attribute and must be u
 When the IntelliJ Platform loads a plugin, it tries to load all its modules.
 A module can be loaded if and only if all its dependencies are available.
 If some module cannot be loaded, the behavior depends on the value of an optional `loading` attribute:
+
 * `required`: module is the required part of the plugin; if the module cannot be loaded, the whole plugin isn't loaded, and an error is shown to the user.
 * `optional`: module is an optional part of the plugin; if the module cannot be loaded, it is skipped and doesn't prevent other modules from the plugin from being loaded.
 * other options are currently for internal use only.
@@ -62,6 +66,7 @@ If some module cannot be loaded, the behavior depends on the value of an optiona
 If the `loading` attribute is not specified, the module is treated as optional by default.
 
 If the module is optional, it's possible to specify that it should be treated as required when the IDE is running in a specific mode via the `required-if-available` attribute:
+
 * `intellij.platform.backend`: the module is required if the current process is a regular IDE process, or it's a remote development backend process;
 * `intellij.platform.frontend`: the module is required if the current process is a regular IDE process, or it's a remote development frontend process (JetBrains Client).
 
@@ -84,8 +89,8 @@ A special `<dependencies>` tag can be used to specify dependencies on other modu
 
 ```xml
 <dependencies>
-  <module name="example.core" />
-  <plugin id="com.example.plugin" />
+  <module name="example.core"/>
+  <plugin id="com.example.plugin"/>
 </dependencies>
 ```
 
