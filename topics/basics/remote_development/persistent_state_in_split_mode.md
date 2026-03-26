@@ -1,4 +1,6 @@
-# PERSISTENT STATE COMPONENT IN SPLIT MODE
+<!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license. -->
+
+# Persistent State Component in Split Mode
 
 This article shows how to make a **`PersistentStateComponent`** synchronize correctly between the frontend and backend.
 
@@ -11,7 +13,7 @@ At a high level, you will:
 
 This setup is especially important in split mode, where settings may exist on both sides and need to stay in sync.
 
-## CREATE YOUR SETTINGS COMPONENT
+## Create Your Settings Component
 
 Start by implementing your settings component as you normally would.
 
@@ -34,7 +36,7 @@ class MySettings : SimplePersistentStateComponent<MySettings.State>(State()) {
 
 During synchronization, one side may receive no previously stored state. If that happens, `noStateLoaded()` gives you a safe and predictable fallback.
 
-## REGISTER A RemoteSettingInfoProvider
+## Register a RemoteSettingInfoProvider
 
 Next, tell the platform that this settings component should participate in frontend/backend synchronization.
 
@@ -66,11 +68,11 @@ Then register it in `plugin.xml`:
 </extensions>
 ```
 
-### **What this provider does**
+### What This Provider Does
 
 `RemoteSettingInfoProvider` supplies synchronization metadata for your settings component. In particular, it tells the platform which component should be synced and in which direction the initial state should flow.
 
-## DECLARE THE SETTINGS IN XML
+## Declare the Settings in XML
 
 This step is easy to miss, but it is required for initial synchronization.
 
@@ -90,30 +92,30 @@ For project-level settings:
 <projectSettings service="com.example.MySettings"/>
 ```
 
-### **Why this is required**
+### Why This Is Required
 
 These declarations make the settings visible to the synchronization infrastructure from the start. Without them, the platform does not know that the settings should be included in the initial sync.
 
-## CHOOSE THE RIGHT SYNC DIRECTION
+## Choose the Right Sync Direction
 
 When registering your settings, you need to decide where the initial value should come from.
 
 In most cases, the correct choice depends on whether the settings are application-level or project-level.
 
-| Direction | Recommended use |
-| ----- | ----- |
+| Direction             | Recommended use                                                 |
+|-----------------------|-----------------------------------------------------------------|
 | `InitialFromFrontend` | Application-level settings. This is usually the default choice. |
-| `InitialFromBackend` | Project-level settings. This is usually the default choice. |
-| `OnlyFromBackend` | Use when the frontend does not understand or use this setting. |
-| `OnlyFromFrontend` | Use when the setting is owned entirely by a frontend plugin. |
+| `InitialFromBackend`  | Project-level settings. This is usually the default choice.     |
+| `OnlyFromBackend`     | Use when the frontend does not understand or use this setting.  |
+| `OnlyFromFrontend`    | Use when the setting is owned entirely by a frontend plugin.    |
 
-### General guidance:
+### General Guidance
 
 * Use `InitialFromFrontend` for application-level settings unless you have a specific reason not to.
 * Use `InitialFromBackend` for project-level settings unless your architecture requires something different.
 * Use one-way synchronization (`OnlyFromBackend` or `OnlyFromFrontend`) when only one side is able to interpret or manage the setting.
 
-## COMPLETE CHECKLIST
+## Complete Checklist
 
 Before testing your setup, make sure you have done all of the following:
 
@@ -124,7 +126,7 @@ Before testing your setup, make sure you have done all of the following:
 * Declared the settings in XML
 * Chosen the correct synchronization direction
 
-## EXAMPLE SUMMARY
+## Example Summary
 
 For a typical application-level setting:
 

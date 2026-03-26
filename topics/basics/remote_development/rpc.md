@@ -1,3 +1,8 @@
+<!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license. -->
+
+# RPC
+
+<link-summary>Set up RPC between shared, frontend, and backend plugin modules in Split Mode.</link-summary>
 
 This article walks through how remote call (RPC) is set up and refers to a code in the publicly available plugin template, see [https://github.com/JetBrains/intellij-platform-modular-plugin-template](https://github.com/JetBrains/intellij-platform-modular-plugin-template). The plugin is split into three modules: **shared, frontend, and backend**. Let’s start with an explanation of how the module dependencies are configured.
 
@@ -19,8 +24,6 @@ dependencies {
 }
 ```
 
-###
-
 ### Frontend module
 
 The frontend module depends on `:shared` and needs the `rpc` plugin as well:
@@ -41,8 +44,6 @@ dependencies {
     compileOnly(project(":shared"))
 }
 ```
-
-###
 
 ### Backend module
 
@@ -81,7 +82,7 @@ Also declare the backend platform module dependency in `modular.plugin.backend.x
 </idea-plugin>
 ```
 
-## CREATE AN RPC INTERFACE
+## Create an RPC Interface
 
 Introduce the RPC interface in the shared module:
 
@@ -163,9 +164,7 @@ Register the provider in `modular.plugin.backend.xml`:
 </idea-plugin>
 ```
 
-##
-
-## USE RPC ON FRONTEND
+## Use RPC on Frontend
 
 Now you can call `ChatRepositoryRpcApi` on the frontend:
 
@@ -192,11 +191,9 @@ durable {
 
 It will retry the call in case the backend RPC implementation discovery fails. Consider employing it especially when working with long-living RPC flows, so that an exception there will be handled properly and the corresponding feature will remain working.
 
-##
+## RPC Examples
 
-## RPC EXAMPLES
-
-Subscription to the backend state.
+### Subscription to the Backend State
 
 Let’s have a look at the reference implementation from the plugin template [https://github.com/JetBrains/intellij-platform-modular-plugin-template](https://github.com/JetBrains/intellij-platform-modular-plugin-template) .
 
@@ -255,7 +252,7 @@ Since services are initialized lazily, the first subscriber will trigger the RPC
 
 If this matters for your feature, make sure the service is initialized before its first use — for example, via subscribing to updates from the backend inside a dedicated `ProjectActivity`.
 
-Use serializable DTOs for RPC transport
+### Use Serializable DTOs for RPC Transport
 
 Domain objects are not always directly serializable for transport over RPC.
 In this plugin, `ChatMessage` is the domain model used on both sides, but it contains `LocalDateTime`, which is not natively supported by `kotlinx.serialization`.
@@ -304,7 +301,7 @@ The RPC interface uses the DTO, and each side converts to and from the domain mo
 * Backend: converts `ChatMessage -> ChatMessageDto` before emitting via `getMessagesFlow()`
 * Frontend: converts `ChatMessageDto -> ChatMessage` after receiving via `toChatMessage()`
 
-Send events from backend to frontend
+### Send Events from Backend to Frontend
 
 When you need to push events from the backend to the frontend without an explicit request, use `ApplicationRemoteTopic` or `ProjectRemoteTopic` instead of a regular RPC call.
 
@@ -361,8 +358,6 @@ In `modular.plugin.frontend.xml`:
 ```
 
 You can read more about this approach in the `ApplicationRemoteTopic` and `ProjectRemoteTopic` KDocs.
-
-##
 
 ## FAQ
 
