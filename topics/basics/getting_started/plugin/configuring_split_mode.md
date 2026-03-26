@@ -4,7 +4,7 @@
 
 <link-summary>Configure Gradle so a plugin can run, debug, and test with separate frontend and backend processes.</link-summary>
 
-Split Mode configuration is the Gradle layer of remote development support.
+[Split Mode](remote_development.md) configuration is the Gradle layer of remote development support.
 It does not replace modularization, but it is the entry point for running a plugin with separate frontend and backend processes during development.
 
 See also [](remote_development.md) and [](modular_plugins.md).

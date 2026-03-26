@@ -12,7 +12,7 @@
 
 </tldr>
 
-This page describes a practical flow for implementing a feature that works natively in Split Mode and still behaves the same in a monolithic IDE.
+This page describes a practical flow for implementing a feature that works natively in [Split Mode](remote_development.md) and still behaves the same in a monolithic IDE.
 The steps apply both when migrating an existing plugin and when designing a new one.
 
 ![Typical Split Mode refactoring path](remdev_refactoring_path.png){width=706}
