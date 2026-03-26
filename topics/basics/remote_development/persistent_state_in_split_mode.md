@@ -1,116 +1,139 @@
-<!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license. -->
+# PERSISTENT STATE COMPONENT IN SPLIT MODE
 
-# Persistent State in Split Mode
+This article shows how to make a **`PersistentStateComponent`** synchronize correctly between the frontend and backend.
 
-<link-summary>Synchronize plugin settings correctly between frontend and backend processes in split plugins.</link-summary>
+At a high level, you will:
 
-This page explains how to make a `PersistentStateComponent` work correctly in Split Mode.
-In split plugins, settings may exist on both sides and may need explicit synchronization metadata in addition to the regular persistence implementation.
+1. Create your persistent settings component.
+2. Register sync metadata with a `RemoteSettingInfoProvider`.
+3. Declare the settings in XML so the initial synchronization can happen.
+4. Choose the right sync direction for your use case.
 
-See also [](persisting_state_of_components.md).
+This setup is especially important in split mode, where settings may exist on both sides and need to stay in sync.
 
-## Create the Settings Component
+## CREATE YOUR SETTINGS COMPONENT
 
-Implement the settings component as a regular `PersistentStateComponent`.
-For `SimplePersistentStateComponent`, overriding `noStateLoaded()` is often a good idea so an empty remote state resets the component to defaults.
+Start by implementing your settings component as you normally would.
+
+If you use `SimplePersistentStateComponent`, it is a good idea to override `noStateLoaded()`. This helps handle the case where the remote side sends an empty state: instead of leaving the component in an unexpected state, you can explicitly reset it to defaults.
 
 ```kotlin
 @State(name = "MySettings", storages = [Storage("my-settings.xml")])
 class MySettings : SimplePersistentStateComponent<MySettings.State>(State()) {
-  class State : BaseState() {
-    var mySetting by property(true)
-  }
+    class State {
+        var mySetting: Boolean = true
+    }
 
-  override fun noStateLoaded() {
-    loadState(State())
-  }
+    override fun noStateLoaded() {
+        loadState(State()) // Reset to defaults when remote sends empty state
+    }
 }
 ```
 
-If one side has no stored state yet, `noStateLoaded()` provides a predictable fallback instead of leaving the component in a partially initialized state.
+### Why this matters
 
-## Register Sync Metadata
+During synchronization, one side may receive no previously stored state. If that happens, `noStateLoaded()` gives you a safe and predictable fallback.
 
-Register a `RemoteSettingInfoProvider` so the split-mode settings infrastructure knows that the component should be synchronized.
-The provider maps the persistent state name to synchronization metadata and direction.
+## REGISTER A RemoteSettingInfoProvider
+
+Next, tell the platform that this settings component should participate in frontend/backend synchronization.
+
+To do that, create an implementation of `RemoteSettingInfoProvider` and register it on both the frontend and the backend. In practice, this usually means either:
+
+* placing it in a shared module, such as `intellij.platform.split`, or
+* registering the same provider in both plugin XML files.
+
+Example:
 
 ```kotlin
 class MySettingsRemoteInfoProvider : RemoteSettingInfoProvider {
-  override fun getRemoteSettingsInfo(): Map<String, RemoteSettingInfo> = mapOf(
-    "MySettings" to RemoteSettingInfo(direction = Direction.InitialFromFrontend),
-  )
+    override fun getRemoteSettingsInfo() = mapOf(
+        "MySettings" to RemoteSettingInfo(direction = Direction.InitialFromFrontend)
+        // Use InitialFromBackend for project-level settings
+    )
 }
 ```
 
-Register the provider in the plugin descriptors that participate in Split Mode.
-In practice, that usually means either:
+Then register it in `plugin.xml`:
 
-- keeping the provider in code shared by both sides and registering it accordingly
-- or registering equivalent providers in both frontend and backend descriptors
+```xml
+<extensionPoint name="remoteSettingInfoProvider"
+                interface="...RemoteSettingInfoProvider"/>
 
-## Declare the Settings in XML
+<extensions defaultExtensionNs="...">
+    <remoteSettingInfoProvider
+        implementation="com.example.MySettingsRemoteInfoProvider"/>
+</extensions>
+```
 
-Initial synchronization depends on explicit settings declarations.
-Without them, synchronization may not start until the setting changes for the first time.
+### **What this provider does**
+
+`RemoteSettingInfoProvider` supplies synchronization metadata for your settings component. In particular, it tells the platform which component should be synced and in which direction the initial state should flow.
+
+## DECLARE THE SETTINGS IN XML
+
+This step is easy to miss, but it is required for initial synchronization.
+
+If you do not declare the settings in XML, synchronization will not start until the user changes the setting manually for the first time.
+
+Use one of the following declarations, depending on the scope of your settings.
 
 For application-level settings:
 
 ```xml
-<extensions defaultExtensionNs="com.intellij">
-  <applicationSettings service="com.example.MySettings"/>
-</extensions>
+<applicationSettings service="com.example.MySettings"/>
 ```
 
 For project-level settings:
 
 ```xml
-<extensions defaultExtensionNs="com.intellij">
-  <projectSettings service="com.example.MySettings"/>
-</extensions>
+<projectSettings service="com.example.MySettings"/>
 ```
 
-See also:
+### **Why this is required**
 
-- <include from="snippets.topic" element-id="epLink"><var name="ep" value="com.intellij.applicationSettings"/></include>
-- <include from="snippets.topic" element-id="epLink"><var name="ep" value="com.intellij.projectSettings"/></include>
+These declarations make the settings visible to the synchronization infrastructure from the start. Without them, the platform does not know that the settings should be included in the initial sync.
 
-## Choose the Sync Direction
+## CHOOSE THE RIGHT SYNC DIRECTION
 
-The initial direction usually follows the scope of the settings:
+When registering your settings, you need to decide where the initial value should come from.
 
-| Direction | Typical use |
-|-----------|-------------|
-| `InitialFromFrontend` | Application-level settings |
-| `InitialFromBackend` | Project-level settings |
-| `OnlyFromBackend` | Settings that are interpreted only on the backend |
-| `OnlyFromFrontend` | Settings that are owned entirely by the frontend |
+In most cases, the correct choice depends on whether the settings are application-level or project-level.
 
-General guidance:
+| Direction | Recommended use |
+| ----- | ----- |
+| `InitialFromFrontend` | Application-level settings. This is usually the default choice. |
+| `InitialFromBackend` | Project-level settings. This is usually the default choice. |
+| `OnlyFromBackend` | Use when the frontend does not understand or use this setting. |
+| `OnlyFromFrontend` | Use when the setting is owned entirely by a frontend plugin. |
 
-- use `InitialFromFrontend` for application-level settings unless the setting is backend-owned
-- use `InitialFromBackend` for project-level settings unless a feature requires a different ownership model
-- use one-way synchronization only when one side does not read or manage the setting
+### General guidance:
 
-## Checklist
+* Use `InitialFromFrontend` for application-level settings unless you have a specific reason not to.
+* Use `InitialFromBackend` for project-level settings unless your architecture requires something different.
+* Use one-way synchronization (`OnlyFromBackend` or `OnlyFromFrontend`) when only one side is able to interpret or manage the setting.
 
-Before validating the feature in Split Mode, make sure that:
+## COMPLETE CHECKLIST
 
-- the `PersistentStateComponent` implementation is complete
-- `noStateLoaded()` provides safe defaults when needed
-- a `RemoteSettingInfoProvider` is registered
-- the settings are declared with `<applicationSettings>` or `<projectSettings>`
-- the synchronization direction matches the feature ownership model
+Before testing your setup, make sure you have done all of the following:
 
-## Typical Setups
+* Implemented your `PersistentStateComponent`
+* Added a `noStateLoaded()` fallback if needed
+* Created a `RemoteSettingInfoProvider`
+* Registered that provider on both frontend and backend
+* Declared the settings in XML
+* Chosen the correct synchronization direction
+
+## EXAMPLE SUMMARY
 
 For a typical application-level setting:
 
-- implement the setting as a `PersistentStateComponent`
-- declare it with `<applicationSettings ... />`
-- register it in `RemoteSettingInfoProvider`
-- use `Direction.InitialFromFrontend`
+* implement the settings as a `PersistentStateComponent`
+* declare it in XML with `<applicationSettings ... />`
+* register it in `RemoteSettingInfoProvider`
+* use `Direction.InitialFromFrontend`
 
 For a typical project-level setting:
 
-- declare it with `<projectSettings ... />`
-- use `Direction.InitialFromBackend`
+* declare it with `<projectSettings ... />`
+* use `Direction.InitialFromBackend`

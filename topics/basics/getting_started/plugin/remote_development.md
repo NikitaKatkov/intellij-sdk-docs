@@ -24,103 +24,100 @@ Remote development changes where plugin code runs.
 In Split Mode, the frontend process renders the user interface, while the backend process hosts the project model, indexing, analysis, execution, and other heavy work.
 The backend may run on the same machine, on another host, in a container, or in the cloud.
 Plugins that provide user interface, typing assistance, or other latency-sensitive features should account for this model from the beginning.
+This article explains the terminology, motivation, and architecture behind remote development in JetBrains IDEs, also known as **Split Mode**. It also describes how to run, debug, and test an IDE in Split Mode mode.
 
-## Why It Matters
+## WHY IT’S IMPORTANT FOR USERS
 
-### For Users
+* Use more powerful hardware than a local laptop.
+* Work on a different OS than the one you’re running locally (useful for cross-platform development).
+* Use the laptop as a thin client (often no need to keep source code locally).
+* Keep sensitive code on company servers while still working “from anywhere”.
 
-Split Mode makes it possible to:
+## WHY IT’S IMPORTANT FOR PLUGIN DEVELOPERS
 
-- use more powerful hardware than a local laptop
-- work on another operating system while keeping the local machine as a thin client
-- avoid storing project sources locally when that is preferred
-- keep sensitive code on managed infrastructure while still using a local IDE client
+* Responsive UX not affected by latency or insatiable connection issues
+* Some APIs naturally belong to either backend or frontend, and it is crucial they are working on a proper side. Take a file system events listener, for instance: it is likely that the plugin would like to observe events in the FS where the project source code is located, not on the client side.
+* Split Mode becomes more and more popular, and is demanded by JetBrains IDE customers, which in turn are potential plugin customers as well **\<TODO Give me some figures to share, not from the web, but from our DevEco or other surveys \- reliable data required to convince devs\>**
 
-### For Plugin Authors
+## WHAT WOULD HAPPEN IF YOU CHOOSE TO DO NOTHING
 
-Split Mode affects both architecture and user experience:
+Some features do not require anything specific to work properly in Split Mode. These are:
 
-- latency becomes part of the feature design
-- some APIs naturally belong to either the frontend or the backend
-- plugin modules often need different dependencies on different sides
-- a feature that is technically functional may still feel slow or inconsistent if it stays on the wrong side
+* LSP
+* MCP
+* Inspections and annotators
+* Quick fixes and intentions
+* Completion contributors
+* Reference providers
+* Run configurations
+* Find usages providers
+* Inlays
 
-## Behaviour Without Split-Aware Design
 
-Many backend-driven features continue to work with little or no split-specific refactoring.
-Typical examples include:
+Should a backend plugin provide other functionality like UI or editing assistance, it will be available on the frontend as well, but will be affected by latency and result in suboptimal UX. Namely:
 
-- LSP and MCP integrations
-- inspections and annotators
-- quick fixes and intentions
-- completion contributors
-- reference providers
-- run configurations
-- find usages providers
-- inlays
+* Language support, lexer, parser \- get processed on backend, expose their output like PSI tree only on backend. Frontend does not have information regarding the file structure and only renders highlighting received from backend by applying it to the corresponding ranges in an edited file
+* Typing assistance \- gets processed on backend and then sent to frontend, subject for latency issues
+* UI components, actions, dialogs, popups \- gets rendered on the backend side and then rendering commands transmitted to the frontend, does not require additional effort to work, is subject to latency issues, resulting UI components UX usually has insufficient quality
 
-Other features may remain functional but usually provide lower-quality UX when they stay backend-driven:
+## ARCHITECTURE IN A NUTSHELL
 
-- language support infrastructure still runs on the backend, and the frontend renders results instead of owning a full local PSI model
-- typing assistance and editor reactions that require frequent round-trips can feel laggy
-- dialogs, popups, tool windows, and other interactive UI can work from the backend, but their responsiveness is then limited by latency
+![High-level architecture overview](remdev_arch_high_level.png){width=900}
 
-## Architecture in a Nutshell
+A Remote development-native or for short **Split Plugin** is a plugin consisting of **modules** that implement different parts of its functionality and get loaded either on backend of JetBrains IDE, or on frontend, or everywhere. Throughout the documentation these modules will be referred to as **backend, frontend and shared plugin module**. An IDE running in a split mode is essentially two separate processes. A monolithic IDE is a single process. A split plugin works just fine in a monolithic IDE, the only difference is that both frontend and backend functionality are combined in the same process. IntelliJ Platform determines if a particular module belongs to frontend or backend by examining its dependencies for the corresponding \`intellij.platform.frontend/backend\` module name entries. If a dependency is not satisfied, the module does not get loaded. Both frontend and backend dependencies are satisfied when an IDE runs in monolithic mode.
 
-A split plugin usually consists of several modules that are loaded on the frontend, on the backend, or everywhere.
-Throughout this documentation, these modules are referred to as frontend, backend, and shared plugin modules.
-See [](modular_plugins.md) for the packaging model and [](split_mode_feature_development.md) for the migration flow.
+Let’s zoom in the scheme of the Split Plugin and see what's typically inside its parts:
 
-A typical split layout looks as follows:
+![Low-level architecture overview](remdev_arch_low_level.png){width=900}
 
-- shared module: RPC interfaces, DTOs, remote topics, and other code used on both sides
-- frontend module: user interface, editor-side interactions, and latency-sensitive behavior
-- backend module: PSI, VFS, indexing, project model, external process execution, and other project-local logic
+Frontend and backend code communicate with each other via RPC calls. The RPC framework provided by IntelliJ platform implies the existence of a shared plugin module which gets loaded no matter what IDE mode is active. Inside it, RPC interfaces are defined. The frontend module depends on the shared and calls RPC via these interfaces. Backend module depends on the shared and defines RPC interfaces implementations. Thus the primary flow is to get/send data from frontend to backend via RPC.
 
-An IDE running in Split Mode is two separate processes.
-A monolithic IDE remains a single process.
-The same split plugin can work in both cases.
-In monolithic mode, frontend and backend modules are loaded into the same process, and the same abstractions continue to work without network hops.
+Data being sent through the RPC must be serializable, *kotlinx.serialization* framework is used for that purpose. The data is sent over a secure protocol under the hood, there is no need for additional measures to be applied.
 
-## Running Split Mode with Gradle
+In the monolithic IDE, the whole machinery works inside a single process, and there is no network access during RPC execution. In fact, one can consider the RPC function call as a regular suspend function call in kotlin, and thus the features properly implemented for split mode naturally work well in a monolithic IDE.
 
-The [](tools_intellij_platform_gradle_plugin.md) is required for modular plugins and Split Mode development.
-The `intellijPlatform {}` extension provides two key properties:
+## HOW TO RUN THE IDE IN SPLIT MODE WITH GRADLE
 
-- [`splitMode`](tools_intellij_platform_gradle_plugin_extension.md#intellijPlatform-splitMode) enables separate frontend and backend processes
-- [`splitModeTarget`](tools_intellij_platform_gradle_plugin_extension.md#intellijPlatform-splitModeTarget) selects whether the plugin is installed in the frontend, backend, or both
+IntelliJ Platform Gradle Plugin (2.x) is required to build plugins with split mode support. In the \``intellijPlatform`\` section, there are two special options:
+
+* \``splitMode`\` to indicate that the target IDE must run in split mode
+* \``splitModeTarget`\` to indicate where (backend full-fledged or frontend) your plugin must be installed
+
 
 ```kotlin
 intellijPlatform {
-  splitMode = true
-  splitModeTarget = SplitModeTarget.BOTH
+    splitMode = true // false for monolith IDE
+    splitModeTarget = SplitModeTarget.BOTH // also FRONTEND, BACKEND
 }
 ```
 
-See also [](configuring_split_mode.md) and [](tools_intellij_platform_gradle_plugin_task_awares.md#SplitModeAware).
+## HOW TO RUN TESTS IN SPLIT MODE WITH GRADLE
 
-## Testing and Debugging
+There are two common needs here:
 
-Split-aware plugins should be checked in both Split Mode and monolithic mode.
+A) Plugin’s business logic can be tested by regular unit tests using the intellij test framework, see [IntelliJ Platform Testing Extension | IntelliJ Platform Plugin SDK](https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-testing-extension.html#intellijPlatformTesting)
 
-Model and business logic can still be covered with regular IntelliJ Platform tests.
-For modular plugins, full-plugin tests are best placed in the root plugin module so the runtime classpath includes the root <path>plugin.xml</path> descriptor and all registered content modules.
+You may put small tests that verify a specific class functionality in any content module. However, should you decide to test the plugin altogether, kindly put the test classes into the root plugin module \- this is necessary for correct classpath assembly which will include the plugin.xml file and properly register all plugin extensions from all content modules
 
-User interface and end-to-end flows can be verified with [](integration_tests_intro.md).
-The modular plugin template already includes a split-mode run configuration.
-Existing projects can create equivalent run and debug tasks with `runIde` or `intellijPlatformTesting.runIde` entries configured for Split Mode.
+B) Plugin’s UI in split mode can be tested by integrated UI tests framework, see [Integration Tests: UI Testing | IntelliJ Platform Plugin SDK](https://plugins.jetbrains.com/docs/intellij/integration-tests-ui.html#interaction-with-components) . There are publicly available tests that can be used for reference, see [https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples.plugins/src/integrationTest/kotlin/PluginTest.kt](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples.plugins/src/integrationTest/kotlin/PluginTest.kt) .
 
-## Manual Testing and Latency Emulation
+## HOW TO DEBUG THE IDE IN SPLIT MODE WITH GRADLE
 
-A local Split Mode run is useful, but it does not reproduce network delays by default.
-Artificial latency helps expose features that still depend on chatty or blocking frontend and backend interactions.
+To be able to run and debug your plugin, you will need to use a run configuration Run IDE (Split Mode) which will start both frontend and backend processes locally.
 
-<procedure title="Emulate Latency in a Local Split Mode Run">
+The plugin template [https://github.com/JetBrains/intellij-platform-modular-plugin-template](https://github.com/JetBrains/intellij-platform-modular-plugin-template) already provides such a configuration out of the box.
 
-1. Enable internal mode in the target IDE instance with the `-Didea.is.internal=true` system property.
-2. Open the Split Mode widget in the running IDE and enable the internal connection controls.
-3. Increase the direct ping value to inject latency into frontend and backend communication.
-4. Exercise the plugin UI and editor interactions.
-   A well-split feature should remain responsive, show placeholder or stale state only when acceptable, and avoid freezes.
+To have one in your existing project, please do the following:
 
-</procedure>
+1. Make sure you are using the IntelliJ Gradle plugin version 2.13.**\<TODO: paste proper version after it is released\>** or higher
+2. Call the *:generateSplitModeRunConfigurations* task via Execute Gradle Task action or via terminal
+3. Once finished, the task will produce a run configuration that can be selected in the run widget and debugged/run as usual
+
+## HOW TO TEST SPLIT MODE MANUALLY AND EMULATE LATENCY
+
+Deploying the backend to a real remote machine is not the easiest and fastest way to check that the feature has been properly split. The major problem with features working in Split Mode IDE is that they are exposed to latency issues. This could be easily emulated within a locally running Split Mode.
+
+1. Enable internal mode in the IDE your plugin is being tested against (via specifying the system property *\-[Didea.is](http://Didea.is).internal=true*)
+2. Open the **Split Mode** widget in the upper left corner of the target IDE, switch to the **Connection Config (internal)** tab and tick the **Enable Connection Widget** checkbox
+3. Specify a custom reasonably big value in the **Direct Ping** field \- this will delay ALL communication that goes through the RPC in the entire IDE. Only be careful with setting too big values \- you’ll experience a really bad UX, if a particular feature is not yet properly split. Thus you’ll be able to experience a close to real feeling of the features provided by your plugin. Should you notice no annoying or incorrect behaviour, you have likely done a good job refactoring your plugin\! Congrats :)
+![Split Mode widget in the IDE](remdev_split_mode_widget.png){width=900}

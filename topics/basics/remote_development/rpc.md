@@ -1,323 +1,400 @@
-<!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license. -->
 
-# RPC for Split Mode Plugins
+This article walks through how remote call (RPC) is set up and refers to a code in the publicly available plugin template, see [https://github.com/JetBrains/intellij-platform-modular-plugin-template](https://github.com/JetBrains/intellij-platform-modular-plugin-template). The plugin is split into three modules: **shared, frontend, and backend**. Let’s start with an explanation of how the module dependencies are configured.
 
-<link-summary>Connect frontend and backend plugin modules with RPC, serializable DTOs, and remote topics.</link-summary>
+### Shared module
 
-<tldr>
-
-**Reference**: [](modular_plugins.md), [](split_mode_feature_development.md), [](frontend_backend_shared_apis.md)
-
-**Code**: [IntelliJ Platform Modular Plugin Template](https://github.com/JetBrains/intellij-platform-modular-plugin-template)
-
-</tldr>
-
-RPC is the usual transport layer between frontend and backend modules in a split plugin.
-The shared module defines the API contract.
-The backend module implements it.
-The frontend module calls it.
-
-## Module Setup
-
-The shared module defines RPC interfaces and DTOs.
-It typically applies the `rpc` and `kotlinx.serialization` plugins:
+The shared module defines the RPC interface. It needs the `rpc` and `kotlinx.serialization` plugins:
 
 ```kotlin
+// shared/build.gradle.kts
 plugins {
-  id("rpc")
-  id("org.jetbrains.kotlin.jvm")
-  id("org.jetbrains.kotlin.plugin.serialization")
+    id("rpc")
+    id("org.jetbrains.kotlin.jvm")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
-
 dependencies {
-  intellijPlatform {
-    intellijIdea(libs.versions.intellij.platform)
-  }
+    intellijPlatform {
+        intellijIdea(libs.versions.intellij.platform)
+    }
 }
 ```
 
-The frontend module depends on the shared module and frontend platform modules:
+###
+
+### Frontend module
+
+The frontend module depends on `:shared` and needs the `rpc` plugin as well:
 
 ```kotlin
+// frontend/build.gradle.kts
 plugins {
-  id("rpc")
-  id("org.jetbrains.kotlin.jvm")
-  id("org.jetbrains.kotlin.plugin.serialization")
+    id("rpc")
+    id("org.jetbrains.kotlin.jvm")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
-
 dependencies {
-  intellijPlatform {
-    intellijIdea(libs.versions.intellij.platform)
-    bundledModule("intellij.platform.frontend")
-  }
-
-  compileOnly(project(":shared"))
+    intellijPlatform {
+        intellijIdea(libs.versions.intellij.platform)
+        bundledModule("intellij.platform.frontend")
+        // ...
+    }
+    compileOnly(project(":shared"))
 }
 ```
 
-The backend module depends on the shared module and backend platform modules:
+###
+
+### Backend module
+
+The backend module depends on `:shared` and requires `intellij.platform.kernel.backend` and `intellij.platform.rpc.backend`:
 
 ```kotlin
+// backend/build.gradle.kts
 plugins {
-  id("rpc")
-  id("org.jetbrains.kotlin.jvm")
-  id("org.jetbrains.kotlin.plugin.serialization")
+    id("rpc")
+    id("org.jetbrains.kotlin.jvm")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 dependencies {
-  intellijPlatform {
-    intellijIdea(libs.versions.intellij.platform)
-    bundledModule("intellij.platform.kernel.backend")
-    bundledModule("intellij.platform.rpc.backend")
-    bundledModule("intellij.platform.backend")
-  }
-
-  compileOnly(project(":shared"))
+    intellijPlatform {
+        intellijIdea(libs.versions.intellij.platform)
+        bundledModule("intellij.platform.kernel.backend")
+        bundledModule("intellij.platform.rpc.backend")
+        bundledModule("intellij.platform.backend")
+    }
+    compileOnly(project(":shared"))
 }
 ```
 
-The backend module descriptor should declare the platform and shared module dependencies:
+Also declare the backend platform module dependency in `modular.plugin.backend.xml`:
 
 ```xml
+<!-- backend/src/main/resources/modular.plugin.backend.xml -->
 <idea-plugin>
-  <dependencies>
-    <module name="intellij.platform.backend"/>
-    <module name="intellij.platform.kernel.backend"/>
-    <module name="modular.plugin.shared"/>
-  </dependencies>
+    <dependencies>
+        <module name="intellij.platform.backend"/>
+        <module name="intellij.platform.kernel.backend"/>
+        <module name="modular.plugin.shared"/>
+    </dependencies>
+    <!-- ... -->
 </idea-plugin>
 ```
 
-## Create an RPC Interface
+## CREATE AN RPC INTERFACE
 
-Define the RPC interface in the shared module:
+Introduce the RPC interface in the shared module:
 
 ```kotlin
+// shared/src/main/kotlin/org/jetbrains/plugins/template/ChatRepositoryRpcApi.kt
 @Rpc
 interface ChatRepositoryRpcApi : RemoteApi<Unit> {
-  companion object {
-    suspend fun getInstance(): ChatRepositoryRpcApi {
-      return RemoteApiProviderService.resolve(remoteApiDescriptor<ChatRepositoryRpcApi>())
+    companion object {
+        suspend fun getInstance(): ChatRepositoryRpcApi {
+            return RemoteApiProviderService.resolve(remoteApiDescriptor<ChatRepositoryRpcApi>())
+        }
     }
-  }
 
-  suspend fun getMessagesFlow(projectId: ProjectId): Flow<List<ChatMessageDto>>
+    suspend fun getMessagesFlow(projectId: ProjectId): Flow<List<ChatMessageDto>>
 
-  suspend fun sendMessage(projectId: ProjectId, messageContent: String)
+    suspend fun sendMessage(projectId: ProjectId, messageContent: String)
 }
 ```
 
-Use the following rules for RPC interfaces:
+The rules for creating an RPC interface are:
 
-- annotate the interface with `@Rpc`
-- inherit from `RemoteApi<Unit>`
-- make every RPC method `suspend`
-- use only serializable parameters and return values
-- keep transport contracts in the shared module
+1. Add `@Rpc` annotation to the interface.
+2. All functions must be suspend (https://kotlinlang.org/docs/coroutines-basics.html\#suspending-functions).
+3. All parameters and return types must be `@Serializable`. They are essentially data transfer objects (DTO) one might be familiar with from client-server apps development.
+    * Primitives, `String`, `Flow`, `Deferred` are serializable by default.
+    * Enums are not serializable by default. Mark them as `@Serializable` explicitly.
+    * Classes must be annotated with `@Serializable` and must contain only other serializable fields
+4. Introduce `suspend getInstanceAsync()` so the frontend can easily acquire the instance.
+5. Implement RPC interface on the backend
 
-Custom classes and enums should be annotated with `@Serializable`.
-If a type is not natively serializable, provide a custom serializer.
-
-## Implement the RPC on the Backend
-
-Add an implementation in the backend module:
+Add a class implementing the RPC interface in the backend module:
 
 ```kotlin
+// backend/src/main/kotlin/org/jetbrains/plugins/template/BackendChatRepositoryRpcApi.kt
 class BackendChatRepositoryRpcApi : ChatRepositoryRpcApi {
-  override suspend fun getMessagesFlow(projectId: ProjectId): Flow<List<ChatMessageDto>> {
-    val backendProject = projectId.findProjectOrNull() ?: return emptyFlow()
-    return BackendChatRepositoryModel.getInstance(backendProject).getMessagesFlow()
-  }
+    override suspend fun getMessagesFlow(projectId: ProjectId): Flow<List<ChatMessageDto>> {
+        val backendProject = projectId.findProjectOrNull() ?: return emptyFlow()
+        return BackendChatRepositoryModel.getInstance(backendProject).getMessagesFlow()
+    }
 
-  override suspend fun sendMessage(projectId: ProjectId, messageContent: String) {
-    val backendProject = projectId.findProjectOrNull() ?: return
-    BackendChatRepositoryModel.getInstance(backendProject).sendMessage(messageContent)
-  }
+    override suspend fun sendMessage(
+        projectId: ProjectId,
+        messageContent: String
+    ) {
+        val backendProject = projectId.findProjectOrNull() ?: return
+        return BackendChatRepositoryModel.getInstance(backendProject).sendMessage(messageContent)
+    }
 }
 ```
 
-Register the implementation with `RemoteApiProvider`:
+Implement `RemoteApiProvider`, which registers the RPC implementation with the platform:
 
 ```kotlin
+// backend/src/main/kotlin/org/jetbrains/plugins/template/BackendRpcApiProvider.kt
 internal class BackendRpcApiProvider : RemoteApiProvider {
-  override fun RemoteApiProvider.Sink.remoteApis() {
-    remoteApi(remoteApiDescriptor<ChatRepositoryRpcApi>()) {
-      BackendChatRepositoryRpcApi()
+    override fun RemoteApiProvider.Sink.remoteApis() {
+        remoteApi(remoteApiDescriptor<ChatRepositoryRpcApi>()) {
+            BackendChatRepositoryRpcApi()
+        }
     }
-  }
 }
 ```
 
-Register the provider in the backend descriptor:
+Register the provider in `modular.plugin.backend.xml`:
 
 ```xml
+<!-- backend/src/main/resources/modular.plugin.backend.xml -->
 <idea-plugin>
-  <extensions defaultExtensionNs="com.intellij">
-    <platform.rpc.backend.remoteApiProvider
-        implementation="org.jetbrains.plugins.template.BackendRpcApiProvider"/>
-  </extensions>
+    <dependencies>
+        <module name="intellij.platform.backend"/>
+        <module name="intellij.platform.kernel.backend"/>
+        <module name="modular.plugin.shared"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <platform.rpc.backend.remoteApiProvider
+            implementation="org.jetbrains.plugins.template.BackendRpcApiProvider"/>
+    </extensions>
 </idea-plugin>
 ```
 
-## Use RPC on the Frontend
+##
 
-Call the shared API from the frontend:
+## USE RPC ON FRONTEND
+
+Now you can call `ChatRepositoryRpcApi` on the frontend:
 
 ```kotlin
 ChatRepositoryRpcApi.getInstance().getMessagesFlow(project.projectId())
 ChatRepositoryRpcApi.getInstance().sendMessage(project.projectId(), messageContent)
 ```
 
-Because RPC methods are suspending, they must be called from an appropriate coroutine context.
-Avoid running them on EDT.
-See also [](threading_model.md).
+Take into account that all `getInstanceAsync()`, `getMessagesFlow()`, and `sendMessage()` functions are `suspend`, so they must be called in some coroutine context.
 
-If an RPC call fails because the backend is still initializing, reconnecting, or temporarily unavailable, the call may throw an exception.
-Long-lived frontend subscriptions often benefit from the `durable {}` wrapper:
+Implementation detail:
+
+Should there be some problem while trying to execute the RPC, the call will fail with a RpcClientException. For instance if the client tries to execute the call while the backend is not fully initialized, or the network problem happens, or we restart the backend, and during the restart a call gets executed.
+
+Such errors can be mitigated by using the `fleet.rpc.client.DurableKt.durable` wrapper function.
 
 ```kotlin
 durable {
-  ChatRepositoryRpcApi.getInstance().getMessagesFlow(project.projectId()).collect { valueFromBackend ->
-    // Process remote state updates.
-  }
+   ChatRepositoryRpcApi.getInstanceAsync().getMessagesFlow(project.projectId()).collect { valueFromBackend ->
+	... // process the message
+   }
 }
 ```
 
-## Common RPC Patterns
+It will retry the call in case the backend RPC implementation discovery fails. Consider employing it especially when working with long-living RPC flows, so that an exception there will be handled properly and the corresponding feature will remain working.
 
-### Stream Backend State to the Frontend
+##
 
-Backend services often expose a `Flow` and let the RPC layer forward it:
+## RPC EXAMPLES
+
+Subscription to the backend state.
+
+Let’s have a look at the reference implementation from the plugin template [https://github.com/JetBrains/intellij-platform-modular-plugin-template](https://github.com/JetBrains/intellij-platform-modular-plugin-template) .
+
+There, `BackendChatRepositoryModel` holds a `MutableStateFlow` of messages on the backend:
 
 ```kotlin
+// backend/src/main/kotlin/org/jetbrains/plugins/template/BackendChatRepositoryModel.kt
 @Service(Service.Level.PROJECT)
 class BackendChatRepositoryModel {
-  private val _messages = MutableStateFlow(listOf<ChatMessage>())
+    private val _messages = MutableStateFlow(listOf(/* initial messages */))
 
-  fun getMessagesFlow(): Flow<List<ChatMessageDto>> {
-    return _messages.map { messages -> messages.map(ChatMessage::toChatMessageDto) }
-  }
-}
-```
-
-On the frontend, convert the remote flow into local state:
-
-```kotlin
-@Service(Service.Level.PROJECT)
-class FrontendChatRepositoryModel(
-  private val project: Project,
-  coroutineScope: CoroutineScope,
-) {
-  val messagesFlow: StateFlow<List<ChatMessage>> = flow {
-    durable {
-      ChatRepositoryRpcApi.getInstance().getMessagesFlow(project.projectId()).collect { valueFromBackend ->
-        emit(valueFromBackend.map(ChatMessageDto::toChatMessage))
-      }
+    fun getMessagesFlow(): Flow<List<ChatMessageDto>> {
+        return _messages.map { messagesList -> messagesList.map(ChatMessage::toChatMessageDto) }
     }
-  }.stateIn(coroutineScope, SharingStarted.Lazily, emptyList())
+
+    suspend fun sendMessage(messageContent: String) {
+        // appends to _messages, triggering flow emissions
+    }
 }
 ```
 
-### Use Serializable DTOs
-
-Transport objects should stay simple and serializable:
+The RPC implementation simply delegates to this service:
 
 ```kotlin
+// backend/src/main/kotlin/org/jetbrains/plugins/template/BackendChatRepositoryRpcApi.kt
+class BackendChatRepositoryRpcApi : ChatRepositoryRpcApi {
+    override suspend fun getMessagesFlow(projectId: ProjectId): Flow<List<ChatMessageDto>> {
+        val backendProject = projectId.findProjectOrNull() ?: return emptyFlow()
+        return BackendChatRepositoryModel.getInstance(backendProject).getMessagesFlow()
+    }
+}
+```
+
+On the frontend, `FrontendChatRepositoryModel` subscribes to this flow and exposes it as a `StateFlow`:
+
+```kotlin
+// frontend/.../FrontendChatRepositoryModel.kt
+@Service(Level.PROJECT)
+class FrontendChatRepositoryModel(
+    private val project: Project,
+    coroutineScope: CoroutineScope
+) : ChatRepositoryApi {
+    override val messagesFlow: StateFlow<List<ChatMessage>> = flow {
+        durable {
+            ChatRepositoryRpcApi.getInstanceAsync().getMessagesFlow(project.projectId()).collect { valueFromBackend ->
+                val mappedValue = valueFromBackend.map { messageDto -> messageDto.toChatMessage() }
+                emit(mappedValue)
+            }
+        }
+    }.stateIn(coroutineScope, initialValue = emptyList(), started = SharingStarted.Lazily)
+}
+```
+
+As you can see, `messagesFlow` is initialized with an empty list.
+Since services are initialized lazily, the first subscriber will trigger the RPC connection, but the state will be `emptyList()` until the first backend emission arrives.
+
+If this matters for your feature, make sure the service is initialized before its first use — for example, via subscribing to updates from the backend inside a dedicated `ProjectActivity`.
+
+Use serializable DTOs for RPC transport
+
+Domain objects are not always directly serializable for transport over RPC.
+In this plugin, `ChatMessage` is the domain model used on both sides, but it contains `LocalDateTime`, which is not natively supported by `kotlinx.serialization`.
+
+The solution is a dedicated DTO class in the shared module:
+
+```kotlin
+// shared/src/main/kotlin/org/jetbrains/plugins/template/dtos.kt
 @Serializable
 data class ChatMessageDto(
-  val id: String,
-  val content: String,
-  val author: String,
-  val isMyMessage: Boolean,
-  @Serializable(with = LocalDateTimeSerializer::class)
-  val timestamp: LocalDateTime,
-  val type: ChatMessageType,
+    val id: String,
+    val content: String,
+    val author: String,
+    val isMyMessage: Boolean,
+    @Serializable(with = LocalDateTimeSerializer::class)
+    val timestamp: LocalDateTime,
+    val type: ChatMessage.ChatMessageType
 )
+
+fun ChatMessageDto.toChatMessage(): ChatMessage { /* ... */ }
+fun ChatMessage.toChatMessageDto(): ChatMessageDto { /* ... */ }
 ```
 
-For unsupported types, provide a custom serializer:
+Custom `KSerializer` implementations can handle types that are not natively serializable:
 
 ```kotlin
+// shared/src/main/kotlin/org/jetbrains/plugins/template/serializers.kt
 object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
-  private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+    private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
-  override val descriptor: SerialDescriptor =
-    PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
 
-  override fun serialize(encoder: Encoder, value: LocalDateTime) {
-    encoder.encodeString(value.format(formatter))
-  }
+    override fun serialize(encoder: Encoder, value: LocalDateTime) {
+        encoder.encodeString(value.format(formatter))
+    }
 
-  override fun deserialize(decoder: Decoder): LocalDateTime {
-    return LocalDateTime.parse(decoder.decodeString(), formatter)
-  }
+    override fun deserialize(decoder: Decoder): LocalDateTime {
+        return LocalDateTime.parse(decoder.decodeString(), formatter)
+    }
 }
 ```
 
-### Send Events from Backend to Frontend
+The RPC interface uses the DTO, and each side converts to and from the domain model as needed:
 
-For backend-initiated events, use `ApplicationRemoteTopic` or `ProjectRemoteTopic` instead of a request-response RPC call.
+* Backend: converts `ChatMessage -> ChatMessageDto` before emitting via `getMessagesFlow()`
+* Frontend: converts `ChatMessageDto -> ChatMessage` after receiving via `toChatMessage()`
 
-Define the topic and event in the shared module:
+Send events from backend to frontend
+
+When you need to push events from the backend to the frontend without an explicit request, use `ApplicationRemoteTopic` or `ProjectRemoteTopic` instead of a regular RPC call.
+
+1. Define topic and event in the shared module
 
 ```kotlin
+// shared module
 @Serializable
 data class NewMessageEvent(
-  val projectId: ProjectId,
-  val messageId: String,
+    val projectId: ProjectId,
+    val messageId: String
 )
 
 val NEW_MESSAGE_TOPIC: ProjectRemoteTopic<NewMessageEvent> =
-  ProjectRemoteTopic("chat.newMessage", NewMessageEvent.serializer())
+    ProjectRemoteTopic("chat.newMessage", NewMessageEvent.serializer())
 ```
 
-Send the event on the backend:
+2. Send events from the backend
 
 ```kotlin
-NEW_MESSAGE_TOPIC.send(NewMessageEvent(project.projectId(), userMessage.id))
-```
+// backend module
+class BackendChatRepositoryModel {
+    suspend fun sendMessage(messageContent: String) {
+        val userMessage = chatMessageFactory.createUserMessage(messageContent)
+        _messages.value += userMessage
 
-Handle it on the frontend:
-
-```kotlin
-class NewMessageEventListener : ProjectRemoteTopicListener<NewMessageEvent> {
-  override val topic = NEW_MESSAGE_TOPIC
-
-  override fun handleEvent(event: NewMessageEvent) {
-    // React to the event.
-  }
+        NEW_MESSAGE_TOPIC.send(NewMessageEvent(project.projectId(), userMessage.id)
+    }
 }
 ```
 
-Register the listener in the frontend descriptor:
+3. Handle events on the frontend
+
+```kotlin
+// frontend module
+class NewMessageEventListener : ProjectRemoteTopicListener<NewMessageEvent> {
+    override val topic = NEW_MESSAGE_TOPIC
+
+    override fun handleEvent(event: NewMessageEvent) {
+        // React to the new message event
+    }
+}
+```
+
+4. Register the listener via extension point
+
+In `modular.plugin.frontend.xml`:
 
 ```xml
-<idea-plugin>
-  <extensions defaultExtensionNs="com.intellij">
+<extensions defaultExtensionNs="com.intellij">
     <platform.rpc.projectRemoteTopicListener
         implementation="org.jetbrains.plugins.template.NewMessageEventListener"/>
-  </extensions>
-</idea-plugin>
+</extensions>
 ```
+
+You can read more about this approach in the `ApplicationRemoteTopic` and `ProjectRemoteTopic` KDocs.
+
+##
 
 ## FAQ
 
-### What Can Be Passed Through RPC
+**Q:** What classes can be passed through RPC?
 
-All RPC parameters and return values must be serializable.
-Useful platform identifiers include:
+**A:** All parameters and returned values must be `@Serializable`.
+You can read more about `kotlinx.serialization` in its documentation:
+`https://kotlinlang.org/docs/serialization.html`
 
-- `Project.projectId()` and `ProjectId.findProjectOrNull()`
-- `Editor.editorId()` and `EditorId.findEditor()`
-- `VirtualFile.rpcId()` and `VirtualFileId.virtualFile()`
-- `Icon.rpcId()` and `IconId.icon()`
+* Primitives, `String`, `Flow`, `Deferred` are serializable by default.
+* Enums are not serializable by default. Mark them as `@Serializable` as well.
+* For types like `LocalDateTime`, implement a custom `KSerializer` — see `LocalDateTimeSerializer` in this project.
 
-When possible, prefer identifiers over heavyweight platform objects.
+IntelliJ Platform provides a way to pass some commonly used classes through RPC:
 
-### What Causes `AbstractMethodError`
+1. `Project` can be serialized and deserialized by `Project.projectId()` and `ProjectId.findProject()` functions.
+   This plugin passes `ProjectId` to every RPC method so the backend can resolve the correct project instance.
+2. `Editor` can be serialized and deserialized by `Editor.editorId()` and `EditorId.findEditor()` functions.
+3. `VirtualFile` can be serialized and deserialized by `VirtualFile.rpcId()` and `VirtualFileId.virtualFile()` functions.
+4. `Icon` can be serialized and deserialized by `Icon.rpcId()` and `IconId.icon()` functions.
 
-If an RPC stub fails with `AbstractMethodError`, first check that every RPC method in the shared interface is declared as `suspend`.
+Pay attention that these objects are not fully serializable, so the frontend only receives parts of the backend object.
+If possible, use only IDs on the frontend and work with the full objects on the backend side.
 
-### How to Transfer Large Binary Data
+**Q:** What to do with AbstractMethodError?
 
-Wrap large byte arrays in `fleet.rpc.core.Blob` to reduce serialization overhead.
+```
+java.lang.AbstractMethodError: Receiver class InterfaceApiClientStub does not define or inherit an implementation of the resolved method 'abstract void foo()' of interface InterfaceApi.
+```
+
+**A:** Make sure that all the functions in the interface are `suspend`.
+
+**Q:** How to efficiently transfer `byte[]`
+
+**A:** Wrap the data into a `fleet.rpc.core.Blob` for the sake of reducing the serialization overhead.
