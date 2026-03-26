@@ -20,7 +20,7 @@ The steps apply both when migrating an existing plugin and when designing a new 
 Start with a module layout that can express frontend, backend, and shared responsibilities.
 [](modular_plugins.md) describes the packaging model in detail.
 
-For a typical split-aware plugin:
+For a typical split plugin:
 
 - keep the root plugin module for the main <path>plugin.xml</path> descriptor and overall packaging
 - add a shared module with as few dependencies as possible
@@ -55,7 +55,7 @@ For RPC payloads:
 - keep DTOs focused on transport data rather than rich domain behavior
 - prefer identifiers over heavyweight platform objects when possible
 
-Common platform identifiers used in split-aware plugins include:
+Common platform identifiers used in split plugins include:
 
 - `Project.projectId()` and `ProjectId.findProjectOrNull()`
 - `Editor.editorId()` and `EditorId.findEditor()`
@@ -109,7 +109,7 @@ After the feature works functionally, tune it for resilience and UX:
 - page or lazily load large datasets instead of transferring everything at once
 - debounce or batch high-frequency frontend events to avoid chatty RPC traffic
 
-Settings and other persisted state may require extra synchronization metadata in split-aware plugins.
+Settings and other persisted state may require extra synchronization metadata in split plugins.
 See [](persistent_state_in_split_mode.md).
 
 ## 7. Add Tests

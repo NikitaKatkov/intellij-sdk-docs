@@ -12,7 +12,7 @@
 
 </tldr>
 
-RPC is the usual transport layer between frontend and backend modules in a split-aware plugin.
+RPC is the usual transport layer between frontend and backend modules in a split plugin.
 The shared module defines the API contract.
 The backend module implements it.
 The frontend module calls it.

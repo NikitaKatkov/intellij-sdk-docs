@@ -65,11 +65,11 @@ Other features may remain functional but usually provide lower-quality UX when t
 
 ## Architecture in a Nutshell
 
-A split-aware plugin usually consists of several modules that are loaded on the frontend, on the backend, or everywhere.
+A split plugin usually consists of several modules that are loaded on the frontend, on the backend, or everywhere.
 Throughout this documentation, these modules are referred to as frontend, backend, and shared plugin modules.
 See [](modular_plugins.md) for the packaging model and [](split_mode_feature_development.md) for the migration flow.
 
-A typical split-aware layout looks as follows:
+A typical split layout looks as follows:
 
 - shared module: RPC interfaces, DTOs, remote topics, and other code used on both sides
 - frontend module: user interface, editor-side interactions, and latency-sensitive behavior
@@ -77,7 +77,7 @@ A typical split-aware layout looks as follows:
 
 An IDE running in Split Mode is two separate processes.
 A monolithic IDE remains a single process.
-The same split-aware plugin can work in both cases.
+The same split plugin can work in both cases.
 In monolithic mode, frontend and backend modules are loaded into the same process, and the same abstractions continue to work without network hops.
 
 ## Running Split Mode with Gradle
@@ -89,15 +89,13 @@ The `intellijPlatform {}` extension provides two key properties:
 - [`splitModeTarget`](tools_intellij_platform_gradle_plugin_extension.md#intellijPlatform-splitModeTarget) selects whether the plugin is installed in the frontend, backend, or both
 
 ```kotlin
-import org.jetbrains.intellij.platform.gradle.tasks.aware.SplitModeAware.SplitModeTarget
-
 intellijPlatform {
   splitMode = true
   splitModeTarget = SplitModeTarget.BOTH
 }
 ```
 
-See also [](configuring_gradle.md) and [](tools_intellij_platform_gradle_plugin_task_awares.md#SplitModeAware).
+See also [](configuring_split_mode.md) and [](tools_intellij_platform_gradle_plugin_task_awares.md#SplitModeAware).
 
 ## Testing and Debugging
 

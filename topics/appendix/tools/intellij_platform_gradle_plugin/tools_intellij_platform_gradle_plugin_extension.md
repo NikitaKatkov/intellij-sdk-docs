@@ -1,4 +1,4 @@
-<!-- Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license. -->
+<!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license. -->
 
 # IntelliJ Platform Extension
 
@@ -196,7 +196,7 @@ See also:
 Allows for checking how a plugin works in remote development mode, when one machine is running the backend part and another is running a frontend part (JetBrains Client) which connects to the backend.
 
 This property allows running the IDE with backend and frontend parts running in separate processes.
-The developed plugin is installed in the backend part.
+Use [`splitModeTarget`](#intellijPlatform-splitModeTarget) to specify whether the developed plugin is installed in the frontend, backend, or both parts.
 
 {type="narrow"}
 Type
@@ -217,6 +217,7 @@ See also:
 {style="warning"}
 
 Specifies in which part of the product the developed plugin should be installed.
+The default is backend-only, but split plugins often use `BOTH`.
 
 {type="narrow"}
 Type
