@@ -2,9 +2,9 @@
 
 # Frontend, Backend, and Shared APIs
 
-<link-summary>Common IntelliJ Platform APIs that usually belong on the frontend, backend, or shared side of a split-aware plugin.</link-summary>
+<link-summary>Common IntelliJ Platform APIs that usually belong on the frontend, backend, or shared side of a split plugin.</link-summary>
 
-This page lists APIs that commonly indicate where plugin code should live in a split-aware architecture.
+This page lists APIs that commonly indicate where plugin code should live in a split architecture.
 The lists are intentionally conservative.
 Treat them as placement defaults rather than an exhaustive type system.
 If a feature needs a different placement, review the specific API behavior and validate the result in Split Mode.

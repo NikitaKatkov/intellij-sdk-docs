@@ -2,10 +2,10 @@
 
 # Persistent State in Split Mode
 
-<link-summary>Synchronize plugin settings correctly between frontend and backend processes in split-aware plugins.</link-summary>
+<link-summary>Synchronize plugin settings correctly between frontend and backend processes in split plugins.</link-summary>
 
 This page explains how to make a `PersistentStateComponent` work correctly in Split Mode.
-In split-aware plugins, settings may exist on both sides and may need explicit synchronization metadata in addition to the regular persistence implementation.
+In split plugins, settings may exist on both sides and may need explicit synchronization metadata in addition to the regular persistence implementation.
 
 See also [](persisting_state_of_components.md).
 

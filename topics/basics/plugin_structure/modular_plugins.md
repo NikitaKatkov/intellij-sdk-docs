@@ -1,9 +1,17 @@
-<!-- Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license. -->
+<!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license. -->
 
 # Modular Plugins (Experimental)
 <primary-label ref="2025.3"/>
 
 <link-summary>Splitting plugin by modules to support remote development and other cases</link-summary>
+
+<tldr>
+
+**Reference**: [](remote_development.md), [](split_mode_feature_development.md), [](rpc.md), [](frontend_backend_shared_apis.md), [](persistent_state_in_split_mode.md)
+
+**Code**: [IntelliJ Platform Modular Plugin Template](https://github.com/JetBrains/intellij-platform-modular-plugin-template)
+
+</tldr>
 
 A classic plugin has a single [class loader](plugin_class_loaders.md) which is used to load all classes of the plugin.
 This approach works well for many plugins, but there are cases when more granularity is needed:
@@ -18,6 +26,16 @@ In such cases, it's possible to use the new modular plugin format: Plugin Model 
 > Modular plugins can be developed only with [](tools_intellij_platform_gradle_plugin.md).
 >
 {style="note"}
+
+## Typical Split Mode Layout
+
+A split  plugin commonly contains at least three modules:
+
+- shared module: DTOs, RPC interfaces, remote topics, and other code used on both sides
+- frontend module: user interface, editor-side interactions, and other latency-sensitive behavior
+- backend module: PSI, VFS, indexing, project model, execution, and other project-local logic
+
+See [](split_mode_feature_development.md) for the migration flow, [](rpc.md) for communication between modules, and [](frontend_backend_shared_apis.md) for common API placement guidance.
 
 ## Plugin Modules
 
