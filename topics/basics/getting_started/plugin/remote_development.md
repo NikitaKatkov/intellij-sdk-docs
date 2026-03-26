@@ -12,22 +12,18 @@
 
 </tldr>
 
+## What Is Split Mode
+
 The documentation uses the following basic terms:
 
 - **Remote Development**: a workflow where the IDE frontend connects to a backend running locally or on another machine
-- **Split Mode**: essentially a synonym to Remote Development, a JetBrains IDE setup where the frontend and backend run as separate processes
-- **Split Plugin**: a plugin consisting of dedicated frontend, backend, and shared modules so each part runs on the appropriate Split Mode side
+- **Split Mode**: essentially a synonym for Remote Development, a JetBrains IDE setup where the frontend and backend run as separate processes
+- **Split Plugin**: a plugin consisting of dedicated frontend, backend, and shared modules so each part runs on the appropriate side in Split Mode
 
 Remote development changes where plugin code runs.
 In Split Mode, the frontend process renders the user interface, while the backend process hosts the project model, indexing, analysis, execution, and other heavy work.
 The backend may run on the same machine, on another host, in a container, or in the cloud.
 Plugins that provide user interface, typing assistance, or other latency-sensitive features should account for this model from the beginning.
-
-## What Is Split Mode
-
-Split Mode is a JetBrains IDE workflow where a frontend client communicates with a backend IDE process.
-The term remote development is often used for the same architecture.
-JetBrains Client is the most visible frontend process in this model.
 
 ## Why It Matters
 
@@ -49,7 +45,7 @@ Split Mode affects both architecture and user experience:
 - plugin modules often need different dependencies on different sides
 - a feature that is technically functional may still feel slow or inconsistent if it stays on the wrong side
 
-## Behavior Without Split-Aware Design
+## Behaviour Without Split-Aware Design
 
 Many backend-driven features continue to work with little or no split-specific refactoring.
 Typical examples include:

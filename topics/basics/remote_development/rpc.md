@@ -76,7 +76,7 @@ dependencies {
 }
 ```
 
-The backend module descriptor should declare the platform and shared-module dependencies:
+The backend module descriptor should declare the platform and shared module dependencies:
 
 ```xml
 <idea-plugin>
