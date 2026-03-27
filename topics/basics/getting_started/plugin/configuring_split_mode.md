@@ -4,17 +4,14 @@
 
 <link-summary>Configure Gradle so a plugin can run, debug, and test with separate frontend and backend processes.</link-summary>
 
-[Split Mode](remote_development.md) configuration is the Gradle layer of remote development support.
-It does not replace modularization, but it is the entry point for running a plugin with separate frontend and backend processes during development.
-
-See also [](remote_development.md) and [](modular_plugins.md).
-
-## Required Tooling
-
-Split Mode requires [](tools_intellij_platform_gradle_plugin.md).
-The older [](tools_gradle_intellij_plugin.md) does not support modular plugins or Split Mode development.
+Split Mode configuration in the Gradle build script allows for running development sandbox IDEs in mode emulating the [remote development](remote_development.md) scenario.
+It does not replace [plugin modularization](modular_plugins.md), but it is the entry point for running a plugin with separate frontend and backend processes during development.
 
 ## Basic Configuration
+
+> Split Mode requires [IntelliJ Platform Gradle Plugin **2.x**](tools_intellij_platform_gradle_plugin.md).
+>
+{style="warning"}
 
 Enable Split Mode in the `intellijPlatform {}` extension:
 
@@ -27,10 +24,10 @@ intellijPlatform {
 
 The two relevant properties are:
 
-- [`splitMode`](tools_intellij_platform_gradle_plugin_extension.md#intellijPlatform-splitMode), which starts separate frontend and backend processes
-- [`splitModeTarget`](tools_intellij_platform_gradle_plugin_extension.md#intellijPlatform-splitModeTarget), which selects where the plugin is installed
+- [`splitMode`](tools_intellij_platform_gradle_plugin_extension.md#intellijPlatform-splitMode) – starts separate frontend and backend processes
+- [`splitModeTarget`](tools_intellij_platform_gradle_plugin_extension.md#intellijPlatform-splitModeTarget) – selects where the plugin is installed
 
-## Choosing the Install Target
+## Choosing the Installation Target
 
 Choose `splitModeTarget` according to the code being exercised:
 
@@ -38,7 +35,7 @@ Choose `splitModeTarget` according to the code being exercised:
 - `FRONTEND` for frontend-only functionality
 - `BOTH` for typical modular plugins that contain frontend, backend, and shared modules
 
-For split  plugin development, `BOTH` is the most common choice.
+For split plugin development, `BOTH` is the most common choice.
 
 ## Custom Run and Test Tasks
 
@@ -57,7 +54,7 @@ val testIdeUiSplitMode by intellijPlatformTesting.testIdeUi.registering {
 ```
 
 These tasks get dedicated sandboxes and can be used like other development or test tasks.
-See [](tools_intellij_platform_gradle_plugin_testing_extension.md).
+See [](tools_intellij_platform_gradle_plugin_testing_extension.md) for more details.
 
 ## Typical Next Step
 
