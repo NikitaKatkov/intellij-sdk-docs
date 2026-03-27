@@ -8,8 +8,6 @@
 
 <tldr>
 
-**Reference**: [remote development overview](remote_development.md), [Split Mode feature guide](split_mode_feature_development.md), [RPC guide](rpc.md), [API placement guide](frontend_backend_shared_apis.md), [persistent state synchronization](persistent_state_in_split_mode.md)
-
 **Code**: [IntelliJ Platform Modular Plugin Template](https://github.com/JetBrains/intellij-platform-modular-plugin-template)
 
 </tldr>
