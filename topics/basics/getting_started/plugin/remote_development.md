@@ -113,11 +113,11 @@ intellijPlatform {
 
 There are two common needs here:
 
-A) Plugin business logic can be tested by regular unit tests using the IntelliJ test framework, see [IntelliJ Platform Testing Extension | IntelliJ Platform Plugin SDK](https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-testing-extension.html#intellijPlatformTesting)
+A) Plugin business logic can be tested by regular unit tests using the IntelliJ test framework, see [IntelliJ Platform Testing Extension | IntelliJ Platform Plugin SDK](tools_intellij_platform_gradle_plugin_testing_extension.md#intellijPlatformTesting)
 
 You may put small tests that verify the functionality of a specific class in any content module. However, if you decide to test the plugin as a whole, put the test classes into the root plugin module \- this is necessary for correct classpath assembly, which will include the plugin.xml file and properly register all plugin extensions from all content modules.
 
-B) Plugin UI in Split Mode can be tested by the integrated UI test framework, see [Integration Tests: UI Testing](https://plugins.jetbrains.com/docs/intellij/integration-tests-ui.html#interaction-with-components). There are publicly available tests that can be used for reference,
+B) Plugin UI in Split Mode can be tested by the integrated UI test framework, see [Integration Tests: UI Testing](integration_tests_ui.md#interaction-with-components). There are publicly available tests that can be used for reference,
 see [PluginTest.kt example](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples.plugins/src/integrationTest/kotlin/PluginTest.kt).
 
 ## How to Debug the IDE in Split Mode with Gradle
