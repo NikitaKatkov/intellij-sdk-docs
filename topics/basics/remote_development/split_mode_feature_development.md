@@ -11,9 +11,15 @@
 </tldr>
 
 This page describes a practical flow for implementing a feature that works natively in [Split Mode](split_mode_for_remote_development.md) and still behaves the same in a monolithic IDE.
-The steps apply both when migrating an existing plugin and when designing a new one.
+The steps apply both when migrating an existing plugin and when designing a new one:
 
-![Typical Split Mode refactoring path](remdev_refactoring_path.png){width=706}
+1. **Module Structure** — Ensure shared, frontend, and backend modules are present.
+2. **Code Distribution** — Verify that code is properly distributed across shared, frontend, and backend modules.
+3. **Data Serialization** — Make sure that shared data is serializable.
+4. **Data Transfer** — Implement RPC for data exchange.
+5. **Feature Behavior** — Verify correctness in both monolith and split modes.
+6. **Optimization** — Address issues related to empty state and large state loading.
+7. **Tests** — Cover the functionality with regular unit tests and integration UI tests running in both monolith and split mode.
 
 This article shows a step-by-step instruction on how to refactor an existing IntelliJ plugin or write a new one in a way that works natively in Split Mode and provides the best possible UX to its users.
 
