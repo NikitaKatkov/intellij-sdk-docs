@@ -48,7 +48,7 @@
     <toc-element topic="remote_development.md">
       <toc-element topic="modular_plugins.md"/>
       <toc-element topic="split_mode_feature_development.md"/>
-      <toc-element topic="rpc.md"/>
+      <toc-element topic="remote_procedure_call.md"/>
       <toc-element topic="frontend_backend_shared_apis.md"/>
       <toc-element topic="persistent_state_in_split_mode.md"/>
     </toc-element>

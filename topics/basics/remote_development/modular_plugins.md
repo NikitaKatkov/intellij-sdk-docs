@@ -35,7 +35,7 @@ A [split plugin](remote_development.md) commonly contains at least three modules
 - frontend module: user interface, editor-side interactions, and other latency-sensitive behavior
 - backend module: PSI, VFS, indexing, project model, execution, and other project-local logic
 
-See the [Split Mode feature guide](split_mode_feature_development.md) for the migration flow, the [RPC guide](rpc.md) for communication between modules, and the [API placement guide](frontend_backend_shared_apis.md) for common API placement guidance.
+See the [Split Mode feature guide](split_mode_feature_development.md) for the migration flow, the [RPC guide](remote_procedure_call.md) for communication between modules, and the [API placement guide](frontend_backend_shared_apis.md) for common API placement guidance.
 
 ## Plugin Modules
 

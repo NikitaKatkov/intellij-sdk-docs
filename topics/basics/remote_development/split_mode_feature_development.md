@@ -74,7 +74,7 @@ This article shows a step-by-step instruction on how to refactor an existing Int
 - Introduce RPC implementation in the backend plugin module
   1. RPC implementation must implement the corresponding RPC interface
   2. It must be registered in the backend module XML descriptor via the `platform.rpc.backend.remoteApiProvider` extension point
-- For more details about RPC refer to [RPC guideline](rpc.md)
+- For more details about RPC refer to [RPC guideline](remote_procedure_call.md)
 - Use DTOs created on step 3 as input parameters and return values. Get back to step 3 if some data is missing.
 - Call the RPC where the backend data is required
   1. It is a crucial detail that RPC calls are always suspending. It may be impossible to use suspending code in a particular place in the frontend functionality, either because it is an old implementation written in Java and is not ready for suspend functions at all, or because the data must be available immediately, otherwise causing poor UX or even freezes.
