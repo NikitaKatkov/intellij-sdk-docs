@@ -13,13 +13,13 @@
 This page describes a practical flow for implementing new or refactoring an existing feature to make it work natively in [Split Mode](split_mode_for_remote_development.md) and behave the same in a monolithic IDE.
 The steps apply both when migrating an existing plugin and when designing a new one:
 
-1. **Module Structure** — Ensure shared, frontend, and backend modules are present.
-2. **Code Distribution** — Verify that code is properly distributed across shared, frontend, and backend modules.
-3. **Data Serialization** — Make sure that shared data is serializable.
-4. **Data Transfer** — Implement RPC for data exchange.
-5. **Feature Behavior** — Verify correctness in both monolith and split modes.
-6. **Optimization** — Address issues related to empty state and large state loading.
-7. **Tests** — Cover the functionality with regular unit tests and integration UI tests running in both monolith and split mode.
+1. [**Module Structure**](#1-identify-or-create-necessary-plugin-modules) — Ensure shared, frontend, and backend modules are present.
+2. [**Code Distribution**](#2-put-the-existing-or-newly-written-code-into-appropriate-module-types) — Verify that code is properly distributed across shared, frontend, and backend modules.
+3. [**Data Serialization**](#3-create-dto-classes-required-for-data-exchange-between-the-frontend-ui-and-backend-logic) — Make sure that shared data is serializable.
+4. [**Data Transfer**](#4-add-the-transport-layer-to-connect-the-ui-to-the-backend-model) — Implement RPC for data exchange.
+5. [**Feature Behavior**](#5-verify-and-polish) — Verify correctness in both monolith and split modes.
+6. [**Optimization**](#6-review-common-issues) — Address issues related to empty state and large state loading.
+7. [**Tests**](#7-add-tests) — Cover the functionality with regular unit tests and integration UI tests running in both monolith and split mode.
 
 ## 1. Identify or Create Necessary Plugin Modules
 
