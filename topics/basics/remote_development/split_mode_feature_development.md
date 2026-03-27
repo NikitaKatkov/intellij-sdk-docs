@@ -10,7 +10,7 @@
 
 </tldr>
 
-This page describes a practical flow for implementing a feature that works natively in [Split Mode](split_mode_for_remote_development.md) and still behaves the same in a monolithic IDE.
+This page describes a practical flow for implementing new or refactoring an existing feature to make it work natively in [Split Mode](split_mode_for_remote_development.md) and behave the same in a monolithic IDE.
 The steps apply both when migrating an existing plugin and when designing a new one:
 
 1. **Module Structure** — Ensure shared, frontend, and backend modules are present.
@@ -21,124 +21,131 @@ The steps apply both when migrating an existing plugin and when designing a new 
 6. **Optimization** — Address issues related to empty state and large state loading.
 7. **Tests** — Cover the functionality with regular unit tests and integration UI tests running in both monolith and split mode.
 
-This article shows a step-by-step instruction on how to refactor an existing IntelliJ plugin or write a new one in a way that works natively in Split Mode and provides the best possible UX to its users.
+## 1. Identify or Create Necessary Plugin Modules
 
-## 1. Identify or create necessary plugin modules
+1. Refer to the [modular plugin template](https://github.com/JetBrains/intellij-platform-modular-plugin-template) for module structure and necessary dependencies and [Modular Plugins](modular_plugins.md) for modular plugin concept description.
+2. Create at least those three modules:
+   - `<MyPlugin>.Shared` – with as few dependencies as possible
+   - `<MyPlugin>.Backend` - with `intellij.platform.backend` dependency
+   - `<MyPlugin>.Frontend` - with `intellij.platform.frontend` dependency
+3. Make sure the dependencies are properly described in the build scripts – again, refer to the plugin template.
+4. Put the <path>plugin.xml</path> file into the root plugin module’s <path>resources/META-INF</path> directory.
+5. Put the <path>&lt;MyPlugin>.&lt;ModuleType>.xml</path> file directly into the <path>resources</path> directory in all three freshly created modules.
+6. Reference content modules in the root <path>plugin.xml</path> file.
 
-- Please refer to the [modular plugin template](https://github.com/JetBrains/intellij-platform-modular-plugin-template) for module structure and necessary dependencies and [Modular plugins](modular_plugins.md) for modular plugin concept description
-- Create at least those three modules:
-  1. `<YourPlugin>.Shared` - with as few dependencies as possible
-  2. `<YourPlugin>.Backend` - with `intellij.platform.backend` dependency
-  3. `<YourPlugin>.Frontend` - with `intellij.platform.frontend` dependency
-- Make sure the dependencies are properly described in the build scripts - again, refer to the plugin template
-- Put a `plugin.xml` file into the root plugin module’s `resources/META-INF` directory
-- Put the `<YourPlugin>.<ModuleType>.xml` file into the `resources` directory in all three freshly created modules
-- Reference content modules in the root `plugin.xml` file
+**Expected Outcome**: The plugin consists of at least three modules, namely frontend, backend, and shared, plus possibly the existing code that resides in a root plugin module or in other submodules.
 
-> a plugin consists of at least three modules, namely frontend, backend, and shared, plus possibly the existing code that resides in a root plugin module or in other submodules.
->
-{style="note" title="Expected Outcome"}
+## 2. Put the Existing or Newly Written Code Into Appropriate Module Types
 
-## 2. Put the existing or newly written code into appropriate module types
+1. Identify which kind of features dominate in the plugin:
+   1. See which APIs it uses more and which type of module they belong to by referring to the [list of frontend/backend/shared APIs](frontend_backend_shared_apis.md).
+   2. If there are mostly backend extensions in the plugin, consider it backend functionality; otherwise, frontend functionality.
+2. Extract the analyzed functionality into the module type determined during the previous step.
+3. If some APIs are still used in the wrong module type, that’s expected and will be addressed later.
+4. Continue moving the code between modules with a higher level of granularity:
 
-- Identify which kind of features dominate in your plugin
-  1. See which APIs it uses more and which type of module they belong to by referring to [List of Frontend/Backend/Shared APIs in IntelliJ Platform](frontend_backend_shared_apis.md)
-  2. If there are mostly backend extensions in the plugin, consider it backend functionality; otherwise, frontend functionality
-- Extract the existing functionality you have just analyzed into the module type determined during the previous step
-- If some APIs are still used in the wrong module type, that’s expected and will be addressed in due course
-- Continue moving the code between modules with a higher level of granularity
-  1. Example: have a plugin that provides a toolwindow which receives data to display from an external CLI tool that analyzes a project.
-  2. First, move the toolwindow implementation to the frontend and register it in its XML descriptor
-  3. Second, extract the code responsible for external process spawning and reading its output to the backend module
-  4. Ensure no more APIs are reported as being used in an inappropriate module type
+   Example: consider a plugin that provides a tool window which receives data to display from an external CLI tool that analyzes a project. Steps to perform:
+   1. Move the tool window implementation to the frontend and register it in its XML descriptor.
+   2. Extract the code responsible for external process spawning and reading its output to the backend module.
+   3. Ensure no more APIs are reported as being used in an inappropriate module type.
 
-> your plugin is not functioning properly since the UI is now completely detached from the business logic. The code, though, is properly distributed between modules that do not communicate with each other yet. The root plugin module carries only the `plugin.xml` descriptor in its `resources` folder. All the code from it is extracted to one of the freshly created modules.
->
-{style="note" title="Expected Outcome"}
+**Expected Outcome**: the plugin is not functioning properly since the UI is now completely detached from the business logic.
+The code, though, is properly distributed between modules that do not communicate with each other yet.
+The root plugin module carries only the <path>plugin.xml</path> descriptor in its <path>resources</path> folder.
+All the code from it is extracted to one of the freshly created modules.
 
-## 3. Create DTO classes required for data exchange between the frontend UI and backend logic
+## 3. Create DTO Classes Required For Data Exchange Between the Frontend UI and Backend Logic
 
-- Investigate what information is necessary for the extracted UI components but is known only on the backend side
-- Create classes representing the data and annotate them with `@Serializable`
-- Consider using one of the primitive types as a DTO property, or use your own structure with a proper custom serializer implementation
-- Consider using serializable form of some major platform primitives if necessary:
-  1. To pass a `Project` - use `project.projectId()` to create a serializable ID and `projectId.findProjectOrNull()` to resolve a project by ID
-  2. To pass an `Icon` - `icon.rpcId()` and `iconId.icon()`
-  3. To pass a `VirtualFile` - `virtualFile.rpcId()` and `virtualFileId.virtualFile()`
+1. Investigate what information is necessary for the extracted UI components but is known only on the backend side.
+2. Create classes representing the data and annotate them with `@Serializable`.
+3. Consider using one of the primitive types as a DTO property, or use custom structure with a proper custom serializer implementation.
+4. Consider using the serializable form of some major platform primitives if necessary:
+   - To pass a `Project` – use [`project.projectId()`](%gh-ic%/platform/project/shared/src/ProjectId.kt) to create a serializable ID and `projectId.findProjectOrNull()` to resolve a project by ID
+   - To pass an `Icon` – [`icon.rpcId()`](%gh-ic%/platform/platform-impl/rpc/src/com/intellij/ide/ui/icons/IconId.kt) and `iconId.icon()`
+   - To pass a `VirtualFile` - [`virtualFile.rpcId()`](%gh-ic%/platform/platform-impl/rpc/src/com/intellij/ide/vfs/VirtualFileId.kt) and `virtualFileId.virtualFile()`
 
-> there are serializable (in terms of `kotlinx.serialization` framework) DTO classes in the shared module representing the data to be sent over RPC calls.
->
-{style="note" title="Expected Outcome"}
+**Expected Outcome**: There are serializable (in terms of `kotlinx.serialization` framework) DTO classes in the shared module representing the data to be sent over RPC calls.
 
-## 4. Add the transport layer to connect your UI to the backend model
+## 4. Add the Transport Layer to Connect the UI to the Backend Model
 
-- Introduce RPC interface in the shared plugin module
-  1. RPC interface must have an `@Rpc` annotation
-  2. Must implement `RemoteApi<Unit>` interface
-  3. Must have only `suspend` functions
-  4. Must use only `@Serializable` DTO classes as function return type and parameters
-- Introduce RPC implementation in the backend plugin module
-  1. RPC implementation must implement the corresponding RPC interface
-  2. It must be registered in the backend module XML descriptor via the `platform.rpc.backend.remoteApiProvider` extension point
-- For more details about RPC refer to [RPC guideline](remote_procedure_calls.md)
-- Use DTOs created on step 3 as input parameters and return values. Get back to step 3 if some data is missing.
-- Call the RPC where the backend data is required
-  1. It is a crucial detail that RPC calls are always suspending. It may be impossible to use suspending code in a particular place in the frontend functionality, either because it is an old implementation written in Java and is not ready for suspend functions at all, or because the data must be available immediately, otherwise causing poor UX or even freezes.
+> For more details about RPC refer to [RPC guideline](remote_procedure_calls.md).
+
+1. Introduce an RPC interface in the shared plugin module.<br>
+   The RPC interface **must**:
+   - be annotated with `@Rpc`
+   - implement [`RemoteApi<Unit>`](%gh-ic%/fleet/rpc/srcCommonMain/fleet/rpc/FleetApi.kt)
+   - have only `suspend` functions
+   - use only `@Serializable` DTO classes as function parameters and return type
+2. Introduce RPC implementation in the backend plugin module.<br>
+   The RPC implementation **must**:
+   - implement the corresponding RPC interface
+   - be registered in the backend module XML descriptor via the <include from="snippets.topic" element-id="ep"><var name="ep" value="com.intellij.platform.rpc.backend.remoteApiProvider"/></include>
+3. Use DTOs created in [step 3](#3-create-dto-classes-required-for-data-exchange-between-the-frontend-ui-and-backend-logic) as input parameters and return values.
+   Get back to step 3 if some data is missing.
+4. Call the RPC where the backend data is required.
+   - It is a crucial detail that RPC calls are always suspending.
+     It may be impossible to use suspending code in a particular place in the frontend functionality, either because it is an old implementation written in Java and is not ready for suspend functions at all, or because the data must be available immediately, otherwise causing poor UX or even freezes.
      Remember that a proper UX is one of the main reasons we initiated the entire splitting process for, see the [split-mode introduction](split_mode_for_remote_development.md).
-  2. You can’t call RPC on the event dispatch thread (EDT). Avoid wrapping it in `runBlockingCancellable` unless it is absolutely necessary and you understand all the consequences of such a decision, namely blocking the caller thread and breaking the structured concurrency and suspending API concepts
-  3. Consider using the existing platform abstraction for shared state as a reference: [FlowWithHistory.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/lang-impl/src/com/intellij/build/FlowWithHistory.kt)
-- RPC is designed to be initiated by the frontend, which implies that users always interact with one of the IDE UI components that naturally belong to the frontend. In some cases, however, you may want to initiate some UI display from within the backend code. For instance, a long backend process may want to show a notification after it finishes. Consider using the RemoteTopic API in such cases
-  1. Declare a project- or application-level topic in the shared plugin module by using the `ProjectRemoteTopic()` or `ApplicationRemoteTopic()` method, respectively
-  2. Subscribe to the topic in the frontend plugin module via the `platform.rpc.applicationRemoteTopicListener` extension point - here you may call code to display the desired notification, for instance
-  3. Push the serializable DTO class into the topic in the backend plugin module where necessary - as soon as the DTO is delivered, your frontend topic listener will do its job
-  4. Example: [ShowStructurePopupRemoteTopicListener.kt](https://github.com/JetBrains/intellij-community/blob/1b63f9058d6285980c1eac14b8b59fca251751b7/platform/structure-view-impl/frontend/src/ShowStructurePopupRemoteTopicListener.kt)
+   - RPC can't be called on [EDT](threading_model.md).
+     Avoid wrapping it in `runBlockingCancellable` unless it is absolutely necessary, and you understand all the consequences of such a decision, namely blocking the caller thread and breaking the structured concurrency and suspending API concepts.
+   - Consider using the existing platform abstraction for shared state as a reference: [FlowWithHistory.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/lang-impl/src/com/intellij/build/FlowWithHistory.kt).
+5. RPC is designed to be initiated by the frontend, which implies that users always interact with one of the IDE UI components that naturally belong to the frontend.
+   In some cases, however, it is required to initiate some UI display from within the backend code.
+   For example, a long backend process may want to show a notification after it finishes.
+   Consider using the Remote Topic API in such cases:
+   - Declare a project- or application-level topic in the shared plugin module by using the [`ProjectRemoteTopic`](%gh-ic%/platform/remote-topics/shared/src/com/intellij/platform/rpc/topics/ProjectRemoteTopic.kt) or [`ApplicationRemoteTopic`](%gh-ic%/platform/remote-topics/shared/src/com/intellij/platform/rpc/topics/ApplicationRemoteTopic.kt), respectively
+   - Subscribe to the topic in the frontend plugin module via the <include from="snippets.topic" element-id="ep"><var name="ep" value="com.intellij.platform.rpc.applicationRemoteTopicListener"/></include> – code to display the desired notification can be invoked here
+   - Push the serializable DTO class into the topic in the backend plugin module where necessary – as soon as the DTO is delivered, the frontend topic listener will do its job
+   - Example: [ShowStructurePopupRemoteTopicListener.kt](https://github.com/JetBrains/intellij-community/blob/1b63f9058d6285980c1eac14b8b59fca251751b7/platform/structure-view-impl/frontend/src/ShowStructurePopupRemoteTopicListener.kt)
 
-> your frontend UI exchanges serializable data with backend via RPC or RemoteTopic API
->
-{style="note" title="Expected Outcome"}
+**Expected Outcome**: Frontend UI exchanges serializable data with backend via RPC or RemoteTopic API.
 
-## 5. Verify and polish
+## 5. Verify and Polish
 
-After all infrastructure has been implemented, it is time to verify the feature behavior and polish it. Refer to [Introduction into Split Mode / Remote Development](split_mode_for_remote_development.md) on how to manually test Split Mode, and check the monolithic IDE as well - the behavior is expected to be exactly the same.
+After all infrastructure has been implemented, it is time to verify the feature behavior and polish it.
+Refer to [Introduction into Split Mode / Remote Development](split_mode_for_remote_development.md) on how to manually test Split Mode and check the monolithic IDE as well – the behavior is expected to be exactly the same.
 
-> the code is valid from the point of view of this guide, and the behavior is as expected in both Split Mode and a monolithic IDE
->
-{style="note" title="Expected Outcome"}
+**Expected Outcome**: The code is valid from the point of view of this guide, and the feature works as expected in both Split Mode and a monolithic IDE.
 
-## 6. Review common issues
+## 6. Review Common Issues
 
-Now that the general functionality works as expected, consider reviewing the list of frequently occurring problems and suggested solutions for them. Depending on the specifics of the feature, you might not necessarily need to tune the code.
+Now that the general functionality works as expected, consider reviewing the list of frequently occurring problems and suggested solutions for them.
+Necessity of tuning the code depends on the specifics of the feature.
 
-- Handle reconnection: wrap RPC calls in `durable { ... }`; this wrapper will restart the call if a network error occurs. Be careful with any side effects your code inside the durable block produces - ideally, avoid them.
+1. Handle reconnection: wrap RPC calls in [`durable {}`](%gh-ic%/fleet/rpc/srcCommonMain/fleet/rpc/client/Durable.kt); this wrapper will restart the call if a network error occurs.
+   Be careful with any side effects your code inside the durable block produces – ideally, avoid them.
   Example: [RecentFileModelSynchronizer.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles/frontend/src/com/intellij/platform/recentFiles/frontend/model/RecentFileModelSynchronizer.kt)
-- Register actions in proper plugin modules
-  1. We strongly encourage registering actions on the frontend side, if possible. The possibility is determined by the action's update method: if it requires backend entities, the action belongs on the backend. Otherwise - on the frontend.
-  2. Frontend actions are rendered immediately and do not introduce delays when displaying context menus, popups, or toolbars. If the frontend action decides to touch backend entities in the `AnAction.actionPerformed` method, it is completely fine to call RPC there.
-  3. *(\*\*\*advanced\*\*\*) In some complicated cases, the `action.update()` method might require both frontend and backend entities to be available simultaneously. Such cases must be addressed individually depending on a specific feature description. There are examples of shared, eventually synchronized state implementations in the IntelliJ Platform codebase, for instance in
-     the [Recent Files implementation](https://github.com/JetBrains/intellij-community/tree/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles). There, an eventually consistent mutable shared state is implemented to make it possible to access the data model on both the frontend and the backend with no RPC calls required for access*
-  4. Consider approaching us on the [JetBrains Platform Forum](https://platform.jetbrains.com) to discuss what could be done in your specific case.
-- Display empty state: UI must render without waiting for backend; show placeholders and progressively fill in data.
-- Load large state: avoid “send everything at once” RPC implementations; use paging/lazy loading, and request only what the UI needs now.
-  Example: [BackendRecentFileEventsModel.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles/backend/src/com/intellij/platform/recentFiles/backend/BackendRecentFileEventsModel.kt#L164)
-- Do not load data too frequently: avoid chatty RPC (per keystroke, per scroll tick). Batch requests, cache results, debounce UI events.
-  Example: [RecentFilesEditorTypingListener.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles/frontend/src/com/intellij/platform/recentFiles/frontend/RecentFilesEditorTypingListener.kt)
+2. Register actions in proper plugin modules
+   1. We strongly encourage registering actions on the frontend side, if possible.
+      The possibility is determined by the action's update method: if it requires backend entities, the action belongs on the backend.
+      Otherwise – on the frontend.
+   2. Frontend actions are rendered immediately and do not introduce delays when displaying context menus, popups, or toolbars.
+      If the frontend action decides to touch backend entities in the `AnAction.actionPerformed` method, it is completely fine to call RPC there.
+   3. (***advanced***) In some complicated cases, the `action.update()` method might require both frontend and backend entities to be available simultaneously.
+      Such cases must be addressed individually depending on a specific feature description.
+      There are examples of shared, eventually synchronized state implementations in the IntelliJ Platform codebase, for example, in the [Recent Files implementation](%gh-ic%/platform/recentFiles).
+      There, an eventually consistent mutable shared state is implemented to make it possible to access the data model on both the frontend and the backend with no RPC calls required for access.
+   4. Consider approaching us on the [JetBrains Platform Forum](https://platform.jetbrains.com) to discuss what could be done in your specific case.
+3. Display empty state: UI must render without waiting for backend; show placeholders and progressively fill in data.
+4. Load large state: avoid “send everything at once” RPC implementations; use paging/lazy loading, and request only what the UI needs now.
+   Example: [BackendRecentFileEventsModel.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles/backend/src/com/intellij/platform/recentFiles/backend/BackendRecentFileEventsModel.kt#L164)
+5. Do not load data too frequently: avoid chatty RPC (per keystroke, per scroll tick). Batch requests, cache results, debounce UI events.
+   Example: [RecentFilesEditorTypingListener.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles/frontend/src/com/intellij/platform/recentFiles/frontend/RecentFilesEditorTypingListener.kt)
 
-> known issues are mitigated, and the plugin quality is now good enough.
->
-{style="note" title="Expected Outcome"}
+**Expected Outcome**: Known issues are mitigated, and the plugin quality is now good enough.
 
-## 7. Add tests
+## 7. Add Tests
 
-Fix the split feature behavior and quality with unit and integration tests if you have not used the TDD approach earlier. See the [split-mode testing section](split_mode_for_remote_development.md#how-to-run-tests-in-split-mode-with-gradle).
+Fix the split feature behavior and quality with unit and integration tests if you have not used the TDD approach earlier.
+See the [](split_mode_for_remote_development.md#running-tests-in-split-mode) section.
 
 We suggest paying attention to:
 
-- Data transformations: correct de/serialization
+- Data transformations: correct (de)serialization
 - Data consistency: correct data merging in case of complicated features with eventually consistent backend/frontend state
-- Proper behaviour under latency: artificial delay in a test implementation backend service does not bring freezes or broken UX
+- Proper behavior under latency: artificial delay in a test implementation backend service does not bring freezes or broken UX
 
-> the feature implementation has tests covering its correct behaviour in remote and local scenarios.
->
-{style="note" title="Expected Outcome"}
+**Expected Outcome**: The feature implementation has tests covering its correct behavior in remote and local scenarios.
 
-Should you have any questions or uncertainties regarding the splitting process, you are very welcome on our [JetBrains Platform Forum](https://platform.jetbrains.com) - we will try to provide as much help as possible there and reconsider and adjust what is inconvenient for you.
+In case of any questions or uncertainties regarding the splitting process, please post a question on the [JetBrains Platform Forum](https://platform.jetbrains.com).
+We will try to provide as much help as possible there and reconsider and adjust for unexpected cases.
