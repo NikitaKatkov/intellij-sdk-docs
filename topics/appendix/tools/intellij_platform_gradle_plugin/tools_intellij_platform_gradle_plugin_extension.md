@@ -189,7 +189,7 @@ See also:
 ### `splitMode`
 {#intellijPlatform-splitMode}
 
-> [Split Mode](remote_development.md) requires the IntelliJ Platform in version `241.14473` or later.
+> [Split Mode](split_mode_for_remote_development.md) requires the IntelliJ Platform in version `241.14473` or later.
 >
 {style="warning"}
 
@@ -212,12 +212,12 @@ See also:
 ### `splitModeTarget`
 {#intellijPlatform-splitModeTarget}
 
-> [Split Mode](remote_development.md) requires the IntelliJ Platform in version `241.14473` or later.
+> [Split Mode](split_mode_for_remote_development.md) requires the IntelliJ Platform in version `241.14473` or later.
 >
 {style="warning"}
 
 Specifies in which part of the product the developed plugin should be installed.
-The default is backend-only, but [split plugins](remote_development.md) often use `BOTH`.
+The default is backend-only, but [split plugins](split_mode_for_remote_development.md) often use `BOTH`.
 
 {type="narrow"}
 Type

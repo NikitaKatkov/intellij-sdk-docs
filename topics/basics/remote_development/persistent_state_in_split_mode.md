@@ -13,7 +13,7 @@ At a high level, you will:
 3. Declare the settings in XML so the initial synchronization can happen.
 4. Choose the right sync direction for your use case.
 
-This setup is especially important in [split mode](remote_development.md), where settings may exist on both sides and need to stay in sync.
+This setup is especially important in [split mode](split_mode_for_remote_development.md), where settings may exist on both sides and need to stay in sync.
 
 ## Create Your Settings Component
 

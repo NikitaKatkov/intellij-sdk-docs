@@ -7,7 +7,7 @@
 This page lists APIs that commonly indicate where plugin code should live in a split architecture.
 The lists are intentionally conservative.
 Treat them as placement defaults rather than an exhaustive type system.
-If a feature needs a different placement, review the specific API behavior and validate the result in [Split Mode](remote_development.md).
+If a feature needs a different placement, review the specific API behavior and validate the result in [Split Mode](split_mode_for_remote_development.md).
 
 The IntelliJ DevKit plugin is expected to provide inspections for inappropriate API usage.
 

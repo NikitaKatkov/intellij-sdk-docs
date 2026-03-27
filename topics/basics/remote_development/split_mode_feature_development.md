@@ -10,7 +10,7 @@
 
 </tldr>
 
-This page describes a practical flow for implementing a feature that works natively in [Split Mode](remote_development.md) and still behaves the same in a monolithic IDE.
+This page describes a practical flow for implementing a feature that works natively in [Split Mode](split_mode_for_remote_development.md) and still behaves the same in a monolithic IDE.
 The steps apply both when migrating an existing plugin and when designing a new one.
 
 ![Typical Split Mode refactoring path](remdev_refactoring_path.png){width=706}
@@ -78,7 +78,7 @@ This article shows a step-by-step instruction on how to refactor an existing Int
 - Use DTOs created on step 3 as input parameters and return values. Get back to step 3 if some data is missing.
 - Call the RPC where the backend data is required
   1. It is a crucial detail that RPC calls are always suspending. It may be impossible to use suspending code in a particular place in the frontend functionality, either because it is an old implementation written in Java and is not ready for suspend functions at all, or because the data must be available immediately, otherwise causing poor UX or even freezes.
-     Remember that a proper UX is one of the main reasons we initiated the entire splitting process for, see the [split-mode introduction](remote_development.md).
+     Remember that a proper UX is one of the main reasons we initiated the entire splitting process for, see the [split-mode introduction](split_mode_for_remote_development.md).
   2. You can’t call RPC on the event dispatch thread (EDT). Avoid wrapping it in `runBlockingCancellable` unless it is absolutely necessary and you understand all the consequences of such a decision, namely blocking the caller thread and breaking the structured concurrency and suspending API concepts
   3. Consider using the existing platform abstraction for shared state as a reference: [FlowWithHistory.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/lang-impl/src/com/intellij/build/FlowWithHistory.kt)
 - RPC is designed to be initiated by the frontend, which implies that users always interact with one of the IDE UI components that naturally belong to the frontend. In some cases, however, you may want to initiate some UI display from within the backend code. For instance, a long backend process may want to show a notification after it finishes. Consider using the RemoteTopic API in such cases
@@ -93,7 +93,7 @@ This article shows a step-by-step instruction on how to refactor an existing Int
 
 ## 5. Verify and polish
 
-After all infrastructure has been implemented, it is time to verify the feature behavior and polish it. Refer to [Introduction into Split Mode / Remote Development](remote_development.md) on how to manually test Split Mode, and check the monolithic IDE as well - the behavior is expected to be exactly the same.
+After all infrastructure has been implemented, it is time to verify the feature behavior and polish it. Refer to [Introduction into Split Mode / Remote Development](split_mode_for_remote_development.md) on how to manually test Split Mode, and check the monolithic IDE as well - the behavior is expected to be exactly the same.
 
 > the code is valid from the point of view of this guide, and the behavior is as expected in both Split Mode and a monolithic IDE
 >
@@ -123,7 +123,7 @@ Now that the general functionality works as expected, consider reviewing the lis
 
 ## 7. Add tests
 
-Fix the split feature behavior and quality with unit and integration tests if you have not used the TDD approach earlier. See the [split-mode testing section](remote_development.md#how-to-run-tests-in-split-mode-with-gradle).
+Fix the split feature behavior and quality with unit and integration tests if you have not used the TDD approach earlier. See the [split-mode testing section](split_mode_for_remote_development.md#how-to-run-tests-in-split-mode-with-gradle).
 
 We suggest paying attention to:
 
