@@ -131,8 +131,10 @@ Add a class implementing the RPC interface in the backend module:
 // backend/src/main/kotlin/org/jetbrains/plugins/template/BackendChatRepositoryRpcApi.kt
 class BackendChatRepositoryRpcApi : ChatRepositoryRpcApi {
   override suspend fun getMessagesFlow(projectId: ProjectId): Flow<List<ChatMessageDto>> {
-    val backendProject = projectId.findProjectOrNull() ?: return emptyFlow()
-    return BackendChatRepositoryModel.getInstance(backendProject).getMessagesFlow()
+    val backendProject = projectId.findProjectOrNull()
+       ?: return emptyFlow()
+    return BackendChatRepositoryModel.getInstance(backendProject)
+      .getMessagesFlow()
   }
 
   override suspend fun sendMessage(
@@ -140,7 +142,8 @@ class BackendChatRepositoryRpcApi : ChatRepositoryRpcApi {
     messageContent: String
   ) {
     val backendProject = projectId.findProjectOrNull() ?: return
-    return BackendChatRepositoryModel.getInstance(backendProject).sendMessage(messageContent)
+    return BackendChatRepositoryModel.getInstance(backendProject)
+      .sendMessage(messageContent)
   }
 }
 ```
@@ -357,7 +360,7 @@ class BackendChatRepositoryModel {
     val userMessage = chatMessageFactory.createUserMessage(messageContent)
     _messages.value += userMessage
 
-    NEW_MESSAGE_TOPIC.send(NewMessageEvent(project.projectId(), userMessage.id)
+    NEW_MESSAGE_TOPIC.send(NewMessageEvent(project.projectId(), userMessage.id))
   }
 }
 ```
