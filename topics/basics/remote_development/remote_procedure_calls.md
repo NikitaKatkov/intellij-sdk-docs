@@ -88,7 +88,9 @@ Also declare the backend platform module dependency in `modular.plugin.backend.x
 </idea-plugin>
 ```
 
-## Create an RPC Interface
+## Implementing RPC Communication
+
+### RPC Interface
 
 Introduce the RPC interface in the shared module:
 
@@ -112,13 +114,16 @@ interface ChatRepositoryRpcApi : RemoteApi<Unit> {
 The rules for creating an RPC interface are:
 
 1. Add `@Rpc` annotation to the interface.
-2. All functions must be `suspend` (https://kotlinlang.org/docs/coroutines-basics.html\#suspending-functions).
-3. All parameters and return types must be `@Serializable`. They are essentially data transfer objects (DTOs) one might be familiar with from client-server app development.
-    * Primitives, `String`, `Flow`, `Deferred` are serializable by default.
-    * Enums are not serializable by default. Mark them as `@Serializable` explicitly.
-    * Classes must be annotated with `@Serializable` and must contain only other serializable fields
+2. All functions must be [`suspend`](https://kotlinlang.org/docs/coroutines-basics.html#suspending-functions).
+3. All parameters and return types must be `@Serializable`.
+   They are essentially data transfer objects (DTOs) widely used in client-server application development.
+   * Primitives, `String`, `Flow`, `Deferred` are serializable by default.
+   * Enums are not serializable by default. Mark them as `@Serializable` explicitly.
+   * Classes must be annotated with `@Serializable` and must contain only other serializable fields
 4. Introduce `suspend getInstanceAsync()` so the frontend can easily acquire the instance.
 5. Implement the RPC interface on the backend.
+
+### RPC Implementation
 
 Add a class implementing the RPC interface in the backend module:
 
@@ -171,7 +176,7 @@ Register the provider in `modular.plugin.backend.xml`:
 </idea-plugin>
 ```
 
-## Use RPC on Frontend
+### RPC Usage
 
 Now you can call `ChatRepositoryRpcApi` on the frontend:
 
@@ -185,7 +190,8 @@ Note that all `getInstanceAsync()`, `getMessagesFlow()`, and `sendMessage()` fun
 
 Implementation detail:
 
-If some problem occurs while trying to execute the RPC, the call will fail with a RpcClientException. For instance, this may happen if the client tries to execute the call while the backend is not fully initialized, if a network problem occurs, or if the backend is restarted while a call is being executed.
+If some problem occurs while trying to execute the RPC, the call will fail with an `RpcClientException`.
+For instance, this may happen if the client tries to execute the call while the backend is not fully initialized, if a network problem occurs, or if the backend is restarted while a call is being executed.
 
 Such errors can be mitigated by using the `fleet.rpc.client.DurableKt.durable` wrapper function.
 
@@ -199,7 +205,8 @@ durable {
 }
 ```
 
-It will retry the call in case discovery of the backend RPC implementation fails. Consider employing it especially when working with long-lived RPC flows, so that an exception there is handled properly and the corresponding feature keeps working.
+It will retry the call in case discovery of the backend RPC implementation fails.
+Consider using it especially when working with long-lived RPC flows, so that an exception there is handled properly and the corresponding feature keeps working.
 
 ## RPC Examples
 
