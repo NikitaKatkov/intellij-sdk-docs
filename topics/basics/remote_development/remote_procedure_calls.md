@@ -383,13 +383,13 @@ You can read more about this approach in the `ApplicationRemoteTopic` and `Proje
 
 ## FAQ
 
-**Q:** What classes can be passed through RPC?
+### What classes can be passed through RPC?
 
-**A:** All parameters and returned values must be `@Serializable`.
+All parameters and returned values must be `@Serializable`.
 You can read more about `kotlinx.serialization` in the [Kotlin serialization documentation](https://kotlinlang.org/docs/serialization.html).
 
 * Primitives, `String`, `Flow`, `Deferred` are serializable by default.
-* Enums are not serializable by default. Mark them as `@Serializable` as well.
+* Enums are **not serializable** by default and must be annotated with `@Serializable`.
 * For types like `LocalDateTime`, implement a custom `KSerializer` — see `LocalDateTimeSerializer` in this project.
 
 IntelliJ Platform provides a way to pass some commonly used classes through RPC:
@@ -403,7 +403,9 @@ IntelliJ Platform provides a way to pass some commonly used classes through RPC:
 Note that these objects are not fully serializable, so the frontend only receives parts of the backend object.
 If possible, use only IDs on the frontend and work with the full objects on the backend side.
 
-**Q:** What to do with AbstractMethodError?
+### What to do with `AbstractMethodError`?
+
+If an error like this occurs:
 
 ```
 java.lang.AbstractMethodError: Receiver class InterfaceApiClientStub
@@ -411,10 +413,10 @@ does not define or inherit an implementation of the resolved method
 'abstract void foo()' of interface InterfaceApi.
 ```
 
-**A:** Make sure that all the functions in the interface are `suspend`.
+Make sure that all the functions in the interface are `suspend`.
 
-**Q:** How to efficiently transfer `byte[]`
+### How to efficiently transfer `byte[]`?
 
-**A:** Wrap the data into a `fleet.rpc.core.Blob` for the sake of reducing the serialization overhead.
+Wrap the data into a [`fleet.rpc.core.Blob`](%gh-ic%/fleet/rpc/srcCommonMain/fleet/rpc/core/Serialization.kt) for the sake of reducing the serialization overhead.
 
 <include from="snippets.topic" element-id="missingContent"/>
