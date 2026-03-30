@@ -58,11 +58,8 @@ All the code from it is extracted to one of the freshly created modules.
 
 1. Investigate what information is necessary for the extracted UI components but is known only on the backend side.
 2. Create classes representing the data and annotate them with `@Serializable`.
-3. Consider using one of the primitive types as a DTO property, or use custom structure with a proper custom serializer implementation.
-4. Consider using the serializable form of some major platform primitives if necessary:
-   - To pass a `Project` – use [`project.projectId()`](%gh-ic%/platform/project/shared/src/ProjectId.kt) to create a serializable ID and `projectId.findProjectOrNull()` to resolve a project by ID
-   - To pass an `Icon` – [`icon.rpcId()`](%gh-ic%/platform/platform-impl/rpc/src/com/intellij/ide/ui/icons/IconId.kt) and `iconId.icon()`
-   - To pass a `VirtualFile` - [`virtualFile.rpcId()`](%gh-ic%/platform/platform-impl/rpc/src/com/intellij/ide/vfs/VirtualFileId.kt) and `virtualFileId.virtualFile()`
+3. Consider using one of the primitive types as a DTO property, or use custom structure with a proper custom serializer implementation (see [](remote_procedure_calls.md#data-transfer-objects)).
+4. Consider using the serializable form of some major platform primitives if necessary (see [](remote_procedure_calls.md#id-types)).
 
 **Expected Outcome**: There are serializable (in terms of `kotlinx.serialization` framework) DTO classes in the shared module representing the data to be sent over RPC calls.
 
