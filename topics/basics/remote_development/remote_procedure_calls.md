@@ -114,16 +114,17 @@ interface ChatRepositoryRpcApi : RemoteApi<Unit> {
 }
 ```
 
-The rules for creating an RPC interface are:
+RPC interface must follow the rules:
 
-1. Add `@Rpc` annotation to the interface.
+1. The interface must be annotated with [`@Rpc`](%gh-ic%/fleet/rpc/srcCommonMain/fleet/rpc/FleetApi.kt).
 2. All functions must be [`suspend`](https://kotlinlang.org/docs/coroutines-basics.html#suspending-functions).
 3. All parameters and return types must be `@Serializable`.
    They are essentially data transfer objects (DTOs) widely used in client-server application development.
    * Primitives, `String`, `Flow`, `Deferred` are serializable by default.
    * Enums are not serializable by default. Mark them as `@Serializable` explicitly.
    * Classes must be annotated with `@Serializable` and must contain only other serializable fields
-4. Introduce `suspend getInstanceAsync()` so the frontend can easily acquire the instance.
+
+For convenience, introduce `suspend getInstanceAsync()` so the frontend can easily acquire the instance.
 
 ### RPC Backend Implementation
 
@@ -213,7 +214,7 @@ Consider using it especially when working with long-lived RPC flows, so that an 
 
 ## RPC Examples
 
-### Subscription to the Backend State
+### Subscribing to the Backend State
 
 [`BackendChatRepositoryModel`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/backend/src/main/kotlin/org/jetbrains/plugins/template/BackendChatRepositoryModel.kt) holds a `MutableStateFlow` of messages on the backend:
 
@@ -281,7 +282,7 @@ Since services are initialized lazily, the first subscriber will trigger the RPC
 
 If this matters for your feature, make sure the service is initialized before its first use — for example, via subscribing to updates from the backend inside a dedicated `ProjectActivity`.
 
-### Use Serializable DTOs for RPC Transport
+### Using Serializable DTOs for RPC Transport
 
 Domain objects are not always directly serializable for transport over RPC.
 
