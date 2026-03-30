@@ -64,7 +64,7 @@ The following APIs usually belong in the backend module:
 - [`com.intellij.execution.configurations.ConfigurationType`](%gh-ic%/platform/execution/src/com/intellij/execution/configurations/ConfigurationType.java)
 - [`com.intellij.psi.search.searches.ReferencesSearch`](%gh-ic%/platform/indexing-api/src/com/intellij/psi/search/searches/ReferencesSearch.java)
 - [`com.intellij.model.search.SearchService`](%gh-ic%/platform/indexing-api/src/com/intellij/model/search/SearchService.kt)
-- `com.intellij.util.Query`(%gh-ic%/platform/core-api/src/com/intellij/util/Query.kt)
+- [`com.intellij.util.Query`](%gh-ic%/platform/core-api/src/com/intellij/util/Query.kt)
 - [`com.intellij.ide.FileIconProvider`](%gh-ic%/platform/core-api/src/com/intellij/ide/FileIconProvider.java)
 - [`com.intellij.codeInsight.hints.InlayHintsProvider`](%gh-ic%/platform/lang-api/src/com/intellij/codeInsight/hints/InlayParameterHintsProvider.java)
 - [`com.intellij.codeInsight.hints.declarative.InlayHintsProvider`](%gh-ic%/platform/lang-api/src/com/intellij/codeInsight/hints/declarative/InlayHintsProvider.kt)
