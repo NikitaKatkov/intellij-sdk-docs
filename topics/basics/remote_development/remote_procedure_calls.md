@@ -182,7 +182,7 @@ Register the provider in the <include from="snippets.topic" element-id="ep"><var
 
 ### Calling RPC from Frontend
 
-Now you can call [`ChatRepositoryRpcApi`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/shared/src/main/kotlin/org/jetbrains/plugins/template/ChatRepositoryRpcApi.kt) on the frontend:
+[`ChatRepositoryRpcApi`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/shared/src/main/kotlin/org/jetbrains/plugins/template/ChatRepositoryRpcApi.kt) can be called on the frontend:
 
 ```kotlin
 val chatRepositoryApi = ChatRepositoryRpcApi.getInstance()
@@ -190,14 +190,15 @@ chatRepositoryApi.getMessagesFlow(project.projectId())
 chatRepositoryApi.sendMessage(project.projectId(), messageContent)
 ```
 
-Note that all `getInstanceAsync()`, `getMessagesFlow()`, and `sendMessage()` functions are `suspend`, so they must be called in some coroutine context.
+Note that all `getInstanceAsync()`, `getMessagesFlow()`, and `sendMessage()` functions are `suspend`.
+They must be called in some coroutine context.
 
 #### RPC Error Handling
 
-If some problem occurs while trying to execute the RPC, the call will fail with an `RpcClientException`.
+Calling an RPC API may fail with an `RpcClientException`, for example, if there are communication problems, service is not ready, etc.
 For instance, this may happen if the client tries to execute the call while the backend is not fully initialized, if a network problem occurs, or if the backend is restarted while a call is being executed.
 
-Such errors can be mitigated by using the `fleet.rpc.client.DurableKt.durable` wrapper function.
+Such errors can be mitigated by using the [`durable`](%gh-ic%/fleet/rpc/srcCommonMain/fleet/rpc/client/Durable.kt) wrapper function.
 
 ```kotlin
 durable {
@@ -210,7 +211,8 @@ durable {
 ```
 
 It will retry the call in case discovery of the backend RPC implementation fails.
-Consider using it especially when working with long-lived RPC flows, so that an exception there is handled properly and the corresponding feature keeps working.
+
+> Consider using `durable` especially when working with long-lived RPC flows, so that an exception there is handled properly and the corresponding feature keeps working.
 
 ## RPC Examples
 
@@ -277,10 +279,10 @@ class FrontendChatRepositoryModel(
 }
 ```
 
-As you can see, `messagesFlow` is initialized with an empty list.
+In the code above, `messagesFlow` is initialized with an empty list.
 Since services are initialized lazily, the first subscriber will trigger the RPC connection, but the state will be `emptyList()` until the first backend emission arrives.
 
-If this matters for your feature, make sure the service is initialized before its first use — for example, via subscribing to updates from the backend inside a dedicated `ProjectActivity`.
+If this matters for an implemented feature, make sure the service is initialized before its first use — for example, via subscribing to updates from the backend inside a dedicated [`ProjectActivity`](%gh-ic%/platform/core-api/src/com/intellij/openapi/startup/StartupActivity.kt).
 
 ### Using Serializable DTOs for RPC Transport
 
@@ -395,7 +397,10 @@ class NewMessageEventListener : ProjectRemoteTopicListener<NewMessageEvent> {
 ### What classes can be passed through RPC?
 
 All parameters and returned values must be `@Serializable`.
-You can read more about `kotlinx.serialization` in the [Kotlin serialization documentation](https://kotlinlang.org/docs/serialization.html).
+
+> See the [Kotlin serialization documentation](https://kotlinlang.org/docs/serialization.html) for more information about `kotlinx.serialization`.
+
+General rules:
 
 * Primitives, `String`, `Flow`, `Deferred` are serializable by default.
 * Enums are **not serializable** by default and must be annotated with `@Serializable`.
