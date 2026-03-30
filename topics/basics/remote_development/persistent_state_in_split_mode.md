@@ -4,22 +4,23 @@
 
 <link-summary>Synchronize persistent plugin settings correctly between frontend and backend in Split Mode.</link-summary>
 
-This article shows how to make a `PersistentStateComponent` synchronize correctly between the frontend and the backend.
+This article shows how to make a [Persistent State Component](persisting_state_of_components.md) synchronize correctly between the frontend and the backend.
 
-At a high level, you will:
+At a high level, it requires:
 
-1. Create your persistent settings component.
-2. Register sync metadata with a `RemoteSettingInfoProvider`.
-3. Declare the settings in XML so the initial synchronization can happen.
-4. Choose the right sync direction for your use case.
+1. Creating a persistent state component.
+2. Registering sync metadata with `RemoteSettingInfoProvider`.
+3. Declaring the settings in XML so the initial synchronization can happen.
+4. Choosing the right sync direction for a use case.
 
 This setup is especially important in [split mode](split_mode_for_remote_development.md), where settings may exist on both sides and need to stay in sync.
 
-## Create Your Settings Component
+## 1. Create a `PersistentStateComponent`
 
-Start by implementing your settings component as you normally would.
+Start by implementing a settings component in a standard way.
 
-If you use `SimplePersistentStateComponent`, it is a good idea to override `noStateLoaded()`. This helps handle the case in which the remote side sends an empty state: instead of leaving the component in an unexpected state, you can explicitly reset it to its defaults.
+In the case of extending [`SimplePersistentStateComponent`](%gh-ic%/platform/projectModel-api/src/com/intellij/openapi/components/SimplePersistentStateComponent.kt), it is recommended to override `noStateLoaded()`.
+This helps handle the case in which the remote side sends an empty state: instead of leaving the component in an unexpected state, it is explicitly reset it to its defaults.
 
 ```kotlin
 @State(
@@ -40,15 +41,15 @@ class MySettings :
 }
 ```
 
-### Why this matters
+It is important, because during synchronization, one side may receive no previously stored state.
+If that happens, `noStateLoaded()` provides a safe and predictable fallback.
 
-During synchronization, one side may receive no previously stored state. If that happens, `noStateLoaded()` gives you a safe and predictable fallback.
+## 2. Register a `RemoteSettingInfoProvider`
 
-## Register a RemoteSettingInfoProvider
+The next step is informing the platform that the persistent state component should participate in frontend/backend synchronization.
 
-Next, tell the platform that this settings component should participate in frontend/backend synchronization.
-
-To do that, create an implementation of `RemoteSettingInfoProvider` and register it on both the frontend and the backend. In practice, this usually means either:
+This is achieved by implementing [`RemoteSettingInfoProvider`](%gh-ic%/platform/platform-impl/src/com/intellij/ide/settings/RemoteSettingInfoProvider.kt) and registering it on both the frontend and the backend.
+In practice, this usually means either:
 
 * placing it in a shared module, such as `intellij.platform.split`, or
 * registering the same provider in both plugin XML files.
@@ -67,66 +68,51 @@ class MySettingsRemoteInfoProvider : RemoteSettingInfoProvider {
 Then register it in `plugin.xml`:
 
 ```xml
-<extensionPoint
-    name="remoteSettingInfoProvider"
-    interface="...RemoteSettingInfoProvider"/>
-
-<extensions defaultExtensionNs="...">
-  <remoteSettingInfoProvider
-      implementation="com.example.MySettingsRemoteInfoProvider"/>
+<extensions defaultExtensionNs="com.intellij">
+  <rdct.remoteSettingProvider
+    implementation="com.example.MySettingsRemoteInfoProvider"/>
 </extensions>
 ```
 
-### What This Provider Does
+`RemoteSettingInfoProvider` supplies synchronization metadata for a persistent state component.
+In particular, it tells the platform which component should be synced and in which direction the initial state should flow.
 
-`RemoteSettingInfoProvider` supplies synchronization metadata for your settings component. In particular, it tells the platform which component should be synced and in which direction the initial state should flow.
+## 3. Declare the Settings in XML
 
-## Declare the Settings in XML
+This step is required for initial synchronization.
 
-This step is easy to miss, but it is required for initial synchronization.
+If settings are not declared in XML, synchronization will not start until the user changes the setting manually for the first time.
 
-If you do not declare the settings in XML, synchronization will not start until the user changes the setting manually for the first time.
-
-Use one of the following declarations, depending on the scope of your settings.
-
-For application-level settings:
+Use one of the following declarations, depending on the scope of settings:
 
 ```xml
+<!-- application-level settings: -->
 <applicationSettings service="com.example.MySettings"/>
-```
 
-For project-level settings:
-
-```xml
+<!-- project-level settings: -->
 <projectSettings service="com.example.MySettings"/>
 ```
 
-### Why This Is Required
+These declarations make the settings visible to the synchronization infrastructure from the start.
+Without them, the platform does not know that the settings should be included in the initial synchronization.
 
-These declarations make the settings visible to the synchronization infrastructure from the start. Without them, the platform does not know that the settings should be included in the initial synchronization.
+## 4. Choose the Right Sync Direction
 
-## Choose the Right Sync Direction
-
-When registering your settings, you need to decide where the initial value should come from.
+When registering settings, it is required to define the [`RemoteSettingInfo.direction`](%gh-ic%/platform/platform-impl/src/com/intellij/ide/settings/RemoteSettingInfo.kt) determining where the initial value should come from.
 
 In most cases, the correct choice depends on whether the settings are application-level or project-level.
+Use the following guidance for choosing the right direction:
 
-| Direction             | Recommended use                                                 |
-|-----------------------|-----------------------------------------------------------------|
-| `InitialFromFrontend` | Application-level settings. This is usually the default choice. |
-| `InitialFromBackend`  | Project-level settings. This is usually the default choice.     |
-| `OnlyFromBackend`     | Use when the frontend does not understand or use this setting.  |
-| `OnlyFromFrontend`    | Use when the setting is owned entirely by a frontend plugin.    |
-
-### General Guidance
-
-* Use `InitialFromFrontend` for application-level settings unless you have a specific reason not to.
-* Use `InitialFromBackend` for project-level settings unless your architecture requires something different.
-* Use one-way synchronization (`OnlyFromBackend` or `OnlyFromFrontend`) when only one side is able to interpret or manage the setting.
+| Direction             | Recommended Use                                                                                                                       |
+|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| `InitialFromFrontend` | The default choice for application-level settings. Use it unless there is a specific reason not to.                                   |
+| `InitialFromBackend`  | The default choice for project-level settings. Use it unless there is a specific reason not to.                                       |
+| `OnlyFromFrontend`    | Use when the setting is owned entirely by the frontend module and the backend module is not able to interpret and manage the setting. |
+| `OnlyFromBackend`     | Use when the setting is owned entirely by the backend module and the frontend module is not able to interpret and manage the setting. |
 
 ## Complete Checklist
 
-Before testing your setup, make sure you have done all of the following:
+Before testing your setup, make sure you have done all the following:
 
 * Implemented your `PersistentStateComponent`
 * Added a `noStateLoaded()` fallback if needed
