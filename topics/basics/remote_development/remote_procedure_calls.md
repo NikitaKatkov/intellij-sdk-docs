@@ -121,7 +121,6 @@ The rules for creating an RPC interface are:
    * Enums are not serializable by default. Mark them as `@Serializable` explicitly.
    * Classes must be annotated with `@Serializable` and must contain only other serializable fields
 4. Introduce `suspend getInstanceAsync()` so the frontend can easily acquire the instance.
-5. Implement the RPC interface on the backend.
 
 ### RPC Implementation
 
