@@ -4,11 +4,17 @@
 
 <link-summary>Set up RPC between shared, frontend, and backend plugin modules in Split Mode.</link-summary>
 
-This article walks through how remote calls (RPC) are set up in [Split Mode](split_mode_for_remote_development.md) and refers to code in the publicly available [modular plugin template](https://github.com/JetBrains/intellij-platform-modular-plugin-template). The plugin is split into three modules: **shared, frontend, and backend**. Let’s start with an explanation of how the module dependencies are configured.
+This article walks through how remote calls (RPC) are set up in [Split Mode](split_mode_for_remote_development.md) and refers to code in the publicly available [modular plugin template](https://github.com/JetBrains/intellij-platform-modular-plugin-template).
+
+## Modules Overview
+
+The plugin is split into three modules: **shared**, **frontend**, and **backend**.
+The following sections explain how the module dependencies are configured.
 
 ### Shared module
 
-The shared module defines the RPC interface. It needs the `rpc` and `kotlinx.serialization` plugins:
+The shared module defines the RPC interface.
+It needs the `rpc` and `kotlinx.serialization` plugins:
 
 ```kotlin
 // shared/build.gradle.kts
