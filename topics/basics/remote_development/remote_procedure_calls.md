@@ -214,6 +214,80 @@ It will retry the call in case discovery of the backend RPC implementation fails
 
 > Consider using `durable` especially when working with long-lived RPC flows, so that an exception there is handled properly and the corresponding feature keeps working.
 
+## Serializable Types
+
+All parameters and return types must be `@Serializable`.
+
+> See the [Kotlin serialization documentation](https://kotlinlang.org/docs/serialization.html) for more information about `kotlinx.serialization`.
+
+General rules:
+
+* Primitives, `String`, `Flow`, `Deferred` are serializable by default.
+* Enums are **not serializable** by default and must be annotated with `@Serializable`.
+* For types like `LocalDateTime`, implement a custom `KSerializer` (see [](#data-transfer-objects)).
+
+### Data Transfer Objects
+
+Domain objects are not always directly serializable for transport over RPC.
+
+In the example plugin, [`ChatMessage`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/shared/src/main/kotlin/org/jetbrains/plugins/template/ChatMessage.kt) is the domain model used on both sides, but it contains `LocalDateTime`, which is not natively supported by `kotlinx.serialization`.
+
+The solution is a dedicated DTO class in the shared module, for example, [`ChatMessageDto`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/shared/src/main/kotlin/org/jetbrains/plugins/template/dtos.kt):
+
+```kotlin
+@Serializable
+data class ChatMessageDto(
+  val id: String,
+  val content: String,
+  val author: String,
+  val isMyMessage: Boolean,
+  @Serializable(with = LocalDateTimeSerializer::class)
+  val timestamp: LocalDateTime,
+  val type: ChatMessage.ChatMessageType
+)
+
+fun ChatMessageDto.toChatMessage(): ChatMessage { /* ... */ }
+fun ChatMessage.toChatMessageDto(): ChatMessageDto { /* ... */ }
+```
+
+Custom `KSerializer` implementations can handle types that are not natively serializable, for example, [`LocalDateTimeSerializer`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/shared/src/main/kotlin/org/jetbrains/plugins/template/serializers.kt):
+
+```kotlin
+object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
+  private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+
+  override val descriptor: SerialDescriptor =
+    PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
+
+  override fun serialize(encoder: Encoder, value: LocalDateTime) {
+    encoder.encodeString(value.format(formatter))
+  }
+
+  override fun deserialize(decoder: Decoder): LocalDateTime {
+    return LocalDateTime.parse(decoder.decodeString(), formatter)
+  }
+}
+```
+
+The RPC interface uses the DTO, and each side converts to and from the domain model as needed:
+
+* Backend: converts `ChatMessage -> ChatMessageDto` before emitting via `getMessagesFlow()`
+* Frontend: converts `ChatMessageDto -> ChatMessage` after receiving via `toChatMessage()`
+
+### ID Types
+
+To pass classes commonly used in IntelliJ Platform through RPC, use ID types and helper functions allowing to serialize and deserialize between the full and ID types:
+
+| Full Type                                                                                          | ID Type                                                                                            | Serialization                                        | Deserialization                                              |
+|-------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------|------------------------------------------------------|--------------------------------------------------------------|
+| [`Project`](%gh-ic%/platform/core-api/src/com/intellij/openapi/project/Project.java)            | [`ProjectId`](%gh-ic%/platform/project/shared/src/ProjectId.kt)                                 | `Project.projectId()`<br>`Project.projectIdOrNull()` | `ProjectId.findProject()`<br>`ProjectId.findProjectOrNull()` |
+| [`VirtualFile`](%gh-ic%/platform/core-api/src/com/intellij/openapi/vfs/VirtualFile.java)        | [`VirtualFileId`](%gh-ic%/platform/platform-impl/rpc/src/com/intellij/ide/vfs/VirtualFileId.kt) | `VirtualFile.rpcId()`                                | `VirtualFileId.virtualFile()`                                |
+| [`Editor`](%gh-ic%/platform/editor-ui-api/src/com/intellij/openapi/editor/Editor.java)          | [`EditorId`](%gh-ic%/platform/platform-impl/src/com/intellij/openapi/editor/impl/EditorId.kt)   | `Editor.editorId()`<br>`Editor.editorIdOrNull()`     | `EditorId.findEditor()`<br>`EditorId.findEditorOrNull()`         |
+| [`Icon`](https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/Icon.html) | [`IconId`](%gh-ic%/platform/platform-impl/rpc/src/com/intellij/ide/ui/icons/IconId.kt)          | `Icon.rpcId()`<br>`Icon.rpcIdOrNull()`                   | `IconId.icon()`                                                             |
+
+Note that these objects are not fully serializable, so the frontend only receives parts of the backend object.
+If possible, use only IDs on the frontend and work with the full objects on the backend side.
+
 ## RPC Examples
 
 ### Subscribing to the Backend State
@@ -284,54 +358,6 @@ Since services are initialized lazily, the first subscriber will trigger the RPC
 
 If this matters for an implemented feature, make sure the service is initialized before its first use — for example, via subscribing to updates from the backend inside a dedicated [`ProjectActivity`](%gh-ic%/platform/core-api/src/com/intellij/openapi/startup/StartupActivity.kt).
 
-### Using Serializable DTOs for RPC Transport
-
-Domain objects are not always directly serializable for transport over RPC.
-
-In the example plugin, [`ChatMessage`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/shared/src/main/kotlin/org/jetbrains/plugins/template/ChatMessage.kt) is the domain model used on both sides, but it contains `LocalDateTime`, which is not natively supported by `kotlinx.serialization`.
-
-The solution is a dedicated DTO class in the shared module, for example, [`ChatMessageDto`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/shared/src/main/kotlin/org/jetbrains/plugins/template/dtos.kt):
-
-```kotlin
-@Serializable
-data class ChatMessageDto(
-  val id: String,
-  val content: String,
-  val author: String,
-  val isMyMessage: Boolean,
-  @Serializable(with = LocalDateTimeSerializer::class)
-  val timestamp: LocalDateTime,
-  val type: ChatMessage.ChatMessageType
-)
-
-fun ChatMessageDto.toChatMessage(): ChatMessage { /* ... */ }
-fun ChatMessage.toChatMessageDto(): ChatMessageDto { /* ... */ }
-```
-
-Custom `KSerializer` implementations can handle types that are not natively serializable, for example, [`LocalDateTimeSerializer`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/shared/src/main/kotlin/org/jetbrains/plugins/template/serializers.kt):
-
-```kotlin
-object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
-  private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
-
-  override val descriptor: SerialDescriptor =
-    PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
-
-  override fun serialize(encoder: Encoder, value: LocalDateTime) {
-    encoder.encodeString(value.format(formatter))
-  }
-
-  override fun deserialize(decoder: Decoder): LocalDateTime {
-    return LocalDateTime.parse(decoder.decodeString(), formatter)
-  }
-}
-```
-
-The RPC interface uses the DTO, and each side converts to and from the domain model as needed:
-
-* Backend: converts `ChatMessage -> ChatMessageDto` before emitting via `getMessagesFlow()`
-* Frontend: converts `ChatMessageDto -> ChatMessage` after receiving via `toChatMessage()`
-
 ### Pushing Events from Backend to Frontend
 
 To push events from the backend to the frontend without an explicit request, use [`ApplicationRemoteTopic`](%gh-ic%/platform/remote-topics/shared/src/com/intellij/platform/rpc/topics/ApplicationRemoteTopic.kt) or [`ProjectRemoteTopic`](%gh-ic%/platform/remote-topics/shared/src/com/intellij/platform/rpc/topics/ProjectRemoteTopic.kt) instead of a regular RPC call.
@@ -393,30 +419,6 @@ class NewMessageEventListener : ProjectRemoteTopicListener<NewMessageEvent> {
 > See `ApplicationRemoteTopic`/`ProjectRemoteTopic`'s docs for more details.
 
 ## FAQ
-
-### What classes can be passed through RPC?
-
-All parameters and returned values must be `@Serializable`.
-
-> See the [Kotlin serialization documentation](https://kotlinlang.org/docs/serialization.html) for more information about `kotlinx.serialization`.
-
-General rules:
-
-* Primitives, `String`, `Flow`, `Deferred` are serializable by default.
-* Enums are **not serializable** by default and must be annotated with `@Serializable`.
-* For types like `LocalDateTime`, implement a custom `KSerializer` — see `LocalDateTimeSerializer` in this project.
-
-To pass classes commonly used in IntelliJ Platform through RPC, use ID types and helper functions allowing to serialize and deserialize between the actual and ID types:
-
-| Full Type                                                                                          | ID Type                                                                                            | Serialization                                        | Deserialization                                              |
-|-------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------|------------------------------------------------------|--------------------------------------------------------------|
-| [`Project`](%gh-ic%/platform/core-api/src/com/intellij/openapi/project/Project.java)            | [`ProjectId`](%gh-ic%/platform/project/shared/src/ProjectId.kt)                                 | `Project.projectId()`<br>`Project.projectIdOrNull()` | `ProjectId.findProject()`<br>`ProjectId.findProjectOrNull()` |
-| [`VirtualFile`](%gh-ic%/platform/core-api/src/com/intellij/openapi/vfs/VirtualFile.java)        | [`VirtualFileId`](%gh-ic%/platform/platform-impl/rpc/src/com/intellij/ide/vfs/VirtualFileId.kt) | `VirtualFile.rpcId()`                                | `VirtualFileId.virtualFile()`                                |
-| [`Editor`](%gh-ic%/platform/editor-ui-api/src/com/intellij/openapi/editor/Editor.java)          | [`EditorId`](%gh-ic%/platform/platform-impl/src/com/intellij/openapi/editor/impl/EditorId.kt)   | `Editor.editorId()`<br>`Editor.editorIdOrNull()`     | `EditorId.findEditor()`<br>`EditorId.findEditorOrNull()`         |
-| [`Icon`](https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/Icon.html) | [`IconId`](%gh-ic%/platform/platform-impl/rpc/src/com/intellij/ide/ui/icons/IconId.kt)          | `Icon.rpcId()`<br>`Icon.rpcIdOrNull()`                   | `IconId.icon()`                                                             |
-
-Note that these objects are not fully serializable, so the frontend only receives parts of the backend object.
-If possible, use only IDs on the frontend and work with the full objects on the backend side.
 
 ### What to do with `AbstractMethodError`?
 
