@@ -110,17 +110,6 @@ Use the following guidance for choosing the right direction:
 | `OnlyFromFrontend`    | Use when the setting is owned entirely by the frontend module and the backend module is not able to interpret and manage the setting. |
 | `OnlyFromBackend`     | Use when the setting is owned entirely by the backend module and the frontend module is not able to interpret and manage the setting. |
 
-## Complete Checklist
-
-Before testing your setup, make sure you have done all the following:
-
-* Implemented your `PersistentStateComponent`
-* Added a `noStateLoaded()` fallback if needed
-* Created a `RemoteSettingInfoProvider`
-* Registered that provider on both frontend and backend
-* Declared the settings in XML
-* Chosen the correct synchronization direction
-
 ## Example Summary
 
 For a typical application-level setting:
