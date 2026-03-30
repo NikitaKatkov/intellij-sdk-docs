@@ -149,3 +149,5 @@ We suggest paying attention to:
 
 In case of any questions or uncertainties regarding the splitting process, please post a question on the [JetBrains Platform Forum](https://platform.jetbrains.com).
 We will try to provide as much help as possible there and reconsider and adjust for unexpected cases.
+
+<include from="snippets.topic" element-id="missingContent"/>

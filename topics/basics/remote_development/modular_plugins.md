@@ -121,3 +121,5 @@ However, the following top-level tags related to registration of classes aren't 
 Also, `<depends>` tags are not allowed.
 Dependencies must be specified in the module descriptor files using `<dependencies>` tag.
 The IDE will automatically treat dependencies of modules marked as `required` as necessary dependencies of the plugin and will suggest installing or enabling corresponding plugins when the plugin is installed.
+
+<include from="snippets.topic" element-id="missingContent"/>
