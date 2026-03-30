@@ -191,7 +191,7 @@ chatRepositoryApi.sendMessage(project.projectId(), messageContent)
 ```
 
 Note that all `getInstanceAsync()`, `getMessagesFlow()`, and `sendMessage()` functions are `suspend`.
-They must be called in some coroutine context.
+They must be called in some [coroutine](kotlin_coroutines.md) context.
 
 #### RPC Error Handling
 
