@@ -8,10 +8,10 @@ This article shows how to make a [Persistent State Component](persisting_state_o
 
 At a high level, it requires:
 
-1. Creating a persistent state component.
-2. Registering sync metadata with `RemoteSettingInfoProvider`.
-3. Declaring the settings in XML so the initial synchronization can happen.
-4. Choosing the right sync direction for a use case.
+1. [Creating a persistent state component.](#1-create-a-persistentstatecomponent)
+2. [Registering sync metadata with `RemoteSettingInfoProvider`.](#2-register-a-remotesettinginfoprovider)
+3. [Declaring the settings in XML so the initial synchronization can happen.](#3-declare-the-settings-in-xml)
+4. [Choosing the right sync direction for a use case.](#4-choose-the-right-sync-direction)
 
 This setup is especially important in [split mode](split_mode_for_remote_development.md), where settings may exist on both sides and need to stay in sync.
 
