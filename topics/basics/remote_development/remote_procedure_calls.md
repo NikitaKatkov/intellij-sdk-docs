@@ -326,11 +326,13 @@ The RPC interface uses the DTO, and each side converts to and from the domain mo
 * Backend: converts `ChatMessage -> ChatMessageDto` before emitting via `getMessagesFlow()`
 * Frontend: converts `ChatMessageDto -> ChatMessage` after receiving via `toChatMessage()`
 
-### Send Events from Backend to Frontend
+### Pushing Events from Backend to Frontend
 
-When you need to push events from the backend to the frontend without an explicit request, use `ApplicationRemoteTopic` or `ProjectRemoteTopic` instead of a regular RPC call.
+To push events from the backend to the frontend without an explicit request, use [`ApplicationRemoteTopic`](%gh-ic%/platform/remote-topics/shared/src/com/intellij/platform/rpc/topics/ApplicationRemoteTopic.kt) or [`ProjectRemoteTopic`](%gh-ic%/platform/remote-topics/shared/src/com/intellij/platform/rpc/topics/ProjectRemoteTopic.kt) instead of a regular RPC call.
 
-1. Define topic and event in the shared module
+Example:
+
+1. Define topic and event in the shared module:
 
 ```kotlin
 // shared module
@@ -344,7 +346,7 @@ val NEW_MESSAGE_TOPIC: ProjectRemoteTopic<NewMessageEvent> =
     ProjectRemoteTopic("chat.newMessage", NewMessageEvent.serializer())
 ```
 
-2. Send events from the backend
+2. Send events from the backend module:
 
 ```kotlin
 // backend module
@@ -353,12 +355,14 @@ class BackendChatRepositoryModel {
     val userMessage = chatMessageFactory.createUserMessage(messageContent)
     _messages.value += userMessage
 
-    NEW_MESSAGE_TOPIC.send(NewMessageEvent(project.projectId(), userMessage.id))
+    NEW_MESSAGE_TOPIC.send(
+       NewMessageEvent(project.projectId(), userMessage.id)
+    )
   }
 }
 ```
 
-3. Handle events on the frontend
+3. Handle events in the frontend module:
 
 ```kotlin
 // frontend module
@@ -371,9 +375,7 @@ class NewMessageEventListener : ProjectRemoteTopicListener<NewMessageEvent> {
 }
 ```
 
-4. Register the listener via extension point
-
-In `modular.plugin.frontend.xml`:
+4. Register the listener via extension point in `modular.plugin.frontend.xml`:
 
 ```xml
 <extensions defaultExtensionNs="com.intellij">
@@ -382,7 +384,7 @@ In `modular.plugin.frontend.xml`:
 </extensions>
 ```
 
-You can read more about this approach in the `ApplicationRemoteTopic` and `ProjectRemoteTopic` KDocs.
+> See `ApplicationRemoteTopic`/`ProjectRemoteTopic`'s docs for more details.
 
 ## FAQ
 
