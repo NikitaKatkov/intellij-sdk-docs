@@ -110,18 +110,4 @@ Use the following guidance for choosing the right direction:
 | `OnlyFromFrontend`    | Use when the setting is owned entirely by the frontend module and the backend module is not able to interpret and manage the setting. |
 | `OnlyFromBackend`     | Use when the setting is owned entirely by the backend module and the frontend module is not able to interpret and manage the setting. |
 
-## Example Summary
-
-For a typical application-level setting:
-
-* implement the settings as a `PersistentStateComponent`
-* declare it in XML with `<applicationSettings ... />`
-* register it in `RemoteSettingInfoProvider`
-* use `Direction.InitialFromFrontend`
-
-For a typical project-level setting:
-
-* declare it with `<projectSettings ... />`
-* use `Direction.InitialFromBackend`
-
 <include from="snippets.topic" element-id="missingContent"/>
