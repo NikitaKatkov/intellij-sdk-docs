@@ -406,13 +406,14 @@ General rules:
 * Enums are **not serializable** by default and must be annotated with `@Serializable`.
 * For types like `LocalDateTime`, implement a custom `KSerializer` — see `LocalDateTimeSerializer` in this project.
 
-IntelliJ Platform provides a way to pass some commonly used classes through RPC:
+To pass classes commonly used in IntelliJ Platform through RPC, use ID types and helper functions allowing to serialize and deserialize between the actual and ID types:
 
-1. `Project` can be serialized and deserialized by `Project.projectId()` and `ProjectId.findProject()` functions.
-   This plugin passes `ProjectId` to every RPC method so the backend can resolve the correct project instance.
-2. `Editor` can be serialized and deserialized by `Editor.editorId()` and `EditorId.findEditor()` functions.
-3. `VirtualFile` can be serialized and deserialized by `VirtualFile.rpcId()` and `VirtualFileId.virtualFile()` functions.
-4. `Icon` can be serialized and deserialized by `Icon.rpcId()` and `IconId.icon()` functions.
+| Full Type                                                                                          | ID Type                                                                                            | Serialization                                        | Deserialization                                              |
+|-------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------|------------------------------------------------------|--------------------------------------------------------------|
+| [`Project`](%gh-ic%/platform/core-api/src/com/intellij/openapi/project/Project.java)            | [`ProjectId`](%gh-ic%/platform/project/shared/src/ProjectId.kt)                                 | `Project.projectId()`<br>`Project.projectIdOrNull()` | `ProjectId.findProject()`<br>`ProjectId.findProjectOrNull()` |
+| [`VirtualFile`](%gh-ic%/platform/core-api/src/com/intellij/openapi/vfs/VirtualFile.java)        | [`VirtualFileId`](%gh-ic%/platform/platform-impl/rpc/src/com/intellij/ide/vfs/VirtualFileId.kt) | `VirtualFile.rpcId()`                                | `VirtualFileId.virtualFile()`                                |
+| [`Editor`](%gh-ic%/platform/editor-ui-api/src/com/intellij/openapi/editor/Editor.java)          | [`EditorId`](%gh-ic%/platform/platform-impl/src/com/intellij/openapi/editor/impl/EditorId.kt)   | `Editor.editorId()`<br>`Editor.editorIdOrNull()`     | `EditorId.findEditor()`<br>`EditorId.findEditorOrNull()`         |
+| [`Icon`](https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/Icon.html) | [`IconId`](%gh-ic%/platform/platform-impl/rpc/src/com/intellij/ide/ui/icons/IconId.kt)          | `Icon.rpcId()`<br>`Icon.rpcIdOrNull()`                   | `IconId.icon()`                                                             |
 
 Note that these objects are not fully serializable, so the frontend only receives parts of the backend object.
 If possible, use only IDs on the frontend and work with the full objects on the backend side.
