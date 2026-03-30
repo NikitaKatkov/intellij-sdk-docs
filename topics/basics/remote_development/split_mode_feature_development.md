@@ -33,7 +33,8 @@ The steps apply both when migrating an existing plugin and when designing a new 
 5. Put the <path>&lt;MyPlugin>.&lt;ModuleType>.xml</path> file directly into the <path>resources</path> directory in all three freshly created modules.
 6. Reference content modules in the root <path>plugin.xml</path> file.
 
-**Expected Outcome**: The plugin consists of at least three modules, namely frontend, backend, and shared, plus possibly the existing code that resides in a root plugin module or in other submodules.
+**Expected Outcome**<br>
+The plugin consists of at least three modules, namely frontend, backend, and shared, plus possibly the existing code that resides in a root plugin module or in other submodules.
 
 ## 2. Put the Existing or Newly Written Code Into Appropriate Module Types
 
@@ -49,7 +50,8 @@ The steps apply both when migrating an existing plugin and when designing a new 
    2. Extract the code responsible for external process spawning and reading its output to the backend module.
    3. Ensure no more APIs are reported as being used in an inappropriate module type.
 
-**Expected Outcome**: the plugin is not functioning properly since the UI is now completely detached from the business logic.
+**Expected Outcome**<br>
+The plugin is not functioning properly since the UI is now completely detached from the business logic.
 The code, though, is properly distributed between modules that do not communicate with each other yet.
 The root plugin module carries only the <path>plugin.xml</path> descriptor in its <path>resources</path> folder.
 All the code from it is extracted to one of the freshly created modules.
@@ -61,7 +63,8 @@ All the code from it is extracted to one of the freshly created modules.
 3. Consider using one of the primitive types as a DTO property, or use custom structure with a proper custom serializer implementation (see [](remote_procedure_calls.md#data-transfer-objects)).
 4. Consider using the serializable form of some major platform primitives if necessary (see [](remote_procedure_calls.md#id-types)).
 
-**Expected Outcome**: There are serializable (in terms of `kotlinx.serialization` framework) DTO classes in the shared module representing the data to be sent over RPC calls.
+**Expected Outcome**<br>
+There are serializable (in terms of `kotlinx.serialization` framework) DTO classes in the shared module representing the data to be sent over RPC calls.
 
 ## 4. Add the Transport Layer to Connect the UI to the Backend Model
 
@@ -95,14 +98,16 @@ All the code from it is extracted to one of the freshly created modules.
    - Push the serializable DTO class into the topic in the backend plugin module where necessary – as soon as the DTO is delivered, the frontend topic listener will do its job
    - Example: [ShowStructurePopupRemoteTopicListener.kt](https://github.com/JetBrains/intellij-community/blob/1b63f9058d6285980c1eac14b8b59fca251751b7/platform/structure-view-impl/frontend/src/ShowStructurePopupRemoteTopicListener.kt)
 
-**Expected Outcome**: Frontend UI exchanges serializable data with backend via RPC or RemoteTopic API.
+**Expected Outcome**<br>
+Frontend UI exchanges serializable data with backend via RPC or RemoteTopic API.
 
 ## 5. Verify and Polish
 
 After all infrastructure has been implemented, it is time to verify the feature behavior and polish it.
 Refer to [Introduction into Split Mode / Remote Development](split_mode_for_remote_development.md) on how to manually test Split Mode and check the monolithic IDE as well – the behavior is expected to be exactly the same.
 
-**Expected Outcome**: The code is valid from the point of view of this guide, and the feature works as expected in both Split Mode and a monolithic IDE.
+**Expected Outcome**<br>
+The code is valid from the point of view of this guide, and the feature works as expected in both Split Mode and a monolithic IDE.
 
 ## 6. Review Common Issues
 
@@ -129,7 +134,8 @@ Necessity of tuning the code depends on the specifics of the feature.
 5. Do not load data too frequently: avoid chatty RPC (per keystroke, per scroll tick). Batch requests, cache results, debounce UI events.
    Example: [RecentFilesEditorTypingListener.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/recentFiles/frontend/src/com/intellij/platform/recentFiles/frontend/RecentFilesEditorTypingListener.kt)
 
-**Expected Outcome**: Known issues are mitigated, and the plugin quality is now good enough.
+**Expected Outcome**<br>
+Known issues are mitigated, and the plugin quality is now good enough.
 
 ## 7. Add Tests
 
@@ -142,7 +148,8 @@ We suggest paying attention to:
 - Data consistency: correct data merging in case of complicated features with eventually consistent backend/frontend state
 - Proper behavior under latency: artificial delay in a test implementation backend service does not bring freezes or broken UX
 
-**Expected Outcome**: The feature implementation has tests covering its correct behavior in remote and local scenarios.
+**Expected Outcome**<br>
+The feature implementation has tests covering its correct behavior in remote and local scenarios.
 
 In case of any questions or uncertainties regarding the splitting process, please post a question on the [JetBrains Platform Forum](https://platform.jetbrains.com).
 We will try to provide as much help as possible there and reconsider and adjust for unexpected cases.
