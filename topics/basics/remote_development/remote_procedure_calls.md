@@ -163,14 +163,8 @@ internal class BackendRpcApiProvider : RemoteApiProvider {
 Register the provider in `modular.plugin.backend.xml`:
 
 ```xml
-<!-- backend/src/main/resources/modular.plugin.backend.xml -->
 <idea-plugin>
-  <dependencies>
-    <module name="intellij.platform.backend"/>
-    <module name="intellij.platform.kernel.backend"/>
-    <module name="modular.plugin.shared"/>
-  </dependencies>
-
+  <!-- ... -->
   <extensions defaultExtensionNs="com.intellij">
     <platform.rpc.backend.remoteApiProvider
       implementation="com.example.BackendRpcApiProvider"/>
