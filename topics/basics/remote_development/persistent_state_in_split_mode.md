@@ -48,11 +48,12 @@ If that happens, `noStateLoaded()` provides a safe and predictable fallback.
 
 The next step is informing the platform that the persistent state component should participate in frontend/backend synchronization.
 
-This is achieved by implementing [`RemoteSettingInfoProvider`](%gh-ic%/platform/platform-impl/src/com/intellij/ide/settings/RemoteSettingInfoProvider.kt) and registering it on both the frontend and the backend.
+This is achieved by implementing [`RemoteSettingInfoProvider`](%gh-ic%/platform/platform-impl/src/com/intellij/ide/settings/RemoteSettingInfoProvider.kt) in the shared module, and registering it on both the frontend and the backend.
+
 In practice, this usually means either:
 
-* placing it in a shared module, such as `intellij.platform.split`, or
-* registering the same provider in both plugin XML files.
+* registering it in a shared XML module descriptor, or
+* registering the same provider in both frontend and backend XML module descriptors.
 
 Example:
 
