@@ -11,13 +11,14 @@ This article walks through how remote calls (RPC) are set up in [Split Mode](spl
 The plugin is split into three modules: **shared**, **frontend**, and **backend**.
 The following sections explain how the module dependencies are configured.
 
-### Shared module
+### Shared Module
 
 The shared module defines the RPC interface.
-It needs the `rpc` and `kotlinx.serialization` plugins:
+It needs the `rpc` and `kotlinx.serialization` plugins.
+
+[`shared/build.gradle.kts`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/shared/build.gradle.kts):
 
 ```kotlin
-// shared/build.gradle.kts
 plugins {
   id("rpc")
   id("org.jetbrains.kotlin.jvm")
@@ -30,12 +31,13 @@ dependencies {
 }
 ```
 
-### Frontend module
+### Frontend Module
 
-The frontend module depends on `:shared` and needs the `rpc` plugin as well:
+The frontend module depends on `:shared` and needs the `rpc` plugin as well.
+
+[`frontend/build.gradle.kts`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/frontend/build.gradle.kts):
 
 ```kotlin
-// frontend/build.gradle.kts
 plugins {
   id("rpc")
   id("org.jetbrains.kotlin.jvm")
@@ -51,12 +53,13 @@ dependencies {
 }
 ```
 
-### Backend module
+### Backend Module
 
-The backend module depends on `:shared` and requires `intellij.platform.kernel.backend` and `intellij.platform.rpc.backend`:
+The backend module depends on `:shared` and requires `intellij.platform.kernel.backend` and `intellij.platform.rpc.backend`.
+
+[`backend/build.gradle.kts`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/backend/build.gradle.kts):
 
 ```kotlin
-// backend/build.gradle.kts
 plugins {
   id("rpc")
   id("org.jetbrains.kotlin.jvm")
@@ -74,10 +77,9 @@ dependencies {
 }
 ```
 
-Also declare the backend platform module dependency in `modular.plugin.backend.xml`:
+Also declare the backend platform module dependency in [`backend/src/main/resources/modular.plugin.backend.xml`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/backend/src/main/resources/modular.plugin.backend.xml):
 
 ```xml
-<!-- backend/src/main/resources/modular.plugin.backend.xml -->
 <idea-plugin>
   <dependencies>
     <module name="intellij.platform.backend"/>
@@ -92,10 +94,11 @@ Also declare the backend platform module dependency in `modular.plugin.backend.x
 
 ### RPC Interface
 
-Introduce the RPC interface in the shared module:
+Introduce the RPC interface in the shared module.
+
+[`ChatRepositoryRpcApi`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/shared/src/main/kotlin/org/jetbrains/plugins/template/ChatRepositoryRpcApi.kt):
 
 ```kotlin
-// shared/src/main/kotlin/org/jetbrains/plugins/template/ChatRepositoryRpcApi.kt
 @Rpc
 interface ChatRepositoryRpcApi : RemoteApi<Unit> {
   companion object {
@@ -122,12 +125,13 @@ The rules for creating an RPC interface are:
    * Classes must be annotated with `@Serializable` and must contain only other serializable fields
 4. Introduce `suspend getInstanceAsync()` so the frontend can easily acquire the instance.
 
-### RPC Implementation
+### RPC Backend Implementation
 
-Add a class implementing the RPC interface in the backend module:
+Add a class implementing the RPC interface in the backend module.
+
+[`BackendChatRepositoryRpcApi`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/backend/src/main/kotlin/org/jetbrains/plugins/template/BackendChatRepositoryRpcApi.kt):
 
 ```kotlin
-// backend/src/main/kotlin/org/jetbrains/plugins/template/BackendChatRepositoryRpcApi.kt
 class BackendChatRepositoryRpcApi : ChatRepositoryRpcApi {
   override suspend fun getMessagesFlow(projectId: ProjectId): Flow<List<ChatMessageDto>> {
     val backendProject = projectId.findProjectOrNull()
@@ -147,10 +151,11 @@ class BackendChatRepositoryRpcApi : ChatRepositoryRpcApi {
 }
 ```
 
-Implement `RemoteApiProvider`, which registers the RPC implementation with the platform:
+Implement [`RemoteApiProvider`](%gh-ic%/platform/kernel/rpc.backend/src/RemoteApiProvider.kt), which registers the RPC implementation with the platform.
+
+[`BackendRpcApiProvider`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/backend/src/main/kotlin/org/jetbrains/plugins/template/BackendRpcApiProvider.kt):
 
 ```kotlin
-// backend/src/main/kotlin/org/jetbrains/plugins/template/BackendRpcApiProvider.kt
 internal class BackendRpcApiProvider : RemoteApiProvider {
   override fun RemoteApiProvider.Sink.remoteApis() {
     remoteApi(remoteApiDescriptor<ChatRepositoryRpcApi>()) {
@@ -160,7 +165,9 @@ internal class BackendRpcApiProvider : RemoteApiProvider {
 }
 ```
 
-Register the provider in `modular.plugin.backend.xml`:
+Register the provider in the <include from="snippets.topic" element-id="ep"><var name="ep" value="com.intellij.platform.rpc.backend.remoteApiProvider"/></include>.
+
+[`backend/src/main/resources/modular.plugin.backend.xml`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/backend/src/main/resources/modular.plugin.backend.xml):
 
 ```xml
 <idea-plugin>
@@ -172,9 +179,9 @@ Register the provider in `modular.plugin.backend.xml`:
 </idea-plugin>
 ```
 
-### RPC Usage
+### Calling RPC from Frontend
 
-Now you can call `ChatRepositoryRpcApi` on the frontend:
+Now you can call [`ChatRepositoryRpcApi`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/shared/src/main/kotlin/org/jetbrains/plugins/template/ChatRepositoryRpcApi.kt) on the frontend:
 
 ```kotlin
 val chatRepositoryApi = ChatRepositoryRpcApi.getInstance()
@@ -184,7 +191,7 @@ chatRepositoryApi.sendMessage(project.projectId(), messageContent)
 
 Note that all `getInstanceAsync()`, `getMessagesFlow()`, and `sendMessage()` functions are `suspend`, so they must be called in some coroutine context.
 
-Implementation detail:
+#### RPC Error Handling
 
 If some problem occurs while trying to execute the RPC, the call will fail with an `RpcClientException`.
 For instance, this may happen if the client tries to execute the call while the backend is not fully initialized, if a network problem occurs, or if the backend is restarted while a call is being executed.
@@ -208,15 +215,14 @@ Consider using it especially when working with long-lived RPC flows, so that an 
 
 ### Subscription to the Backend State
 
-Let’s have a look at the reference implementation from the [modular plugin template](https://github.com/JetBrains/intellij-platform-modular-plugin-template).
-
-There, `BackendChatRepositoryModel` holds a `MutableStateFlow` of messages on the backend:
+[`BackendChatRepositoryModel`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/backend/src/main/kotlin/org/jetbrains/plugins/template/BackendChatRepositoryModel.kt) holds a `MutableStateFlow` of messages on the backend:
 
 ```kotlin
-// backend/src/main/kotlin/org/jetbrains/plugins/template/BackendChatRepositoryModel.kt
 @Service(Service.Level.PROJECT)
 class BackendChatRepositoryModel {
-  private val _messages = MutableStateFlow(listOf(/* initial messages */))
+  private val _messages = MutableStateFlow(
+     listOf(/* initial messages */)
+  )
 
   fun getMessagesFlow(): Flow<List<ChatMessageDto>> {
     return _messages.map { messagesList ->
@@ -230,10 +236,9 @@ class BackendChatRepositoryModel {
 }
 ```
 
-The RPC implementation simply delegates to this service:
+The [`BackendChatRepositoryRpcApi`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/backend/src/main/kotlin/org/jetbrains/plugins/template/BackendChatRepositoryRpcApi.kt) RPC implementation simply delegates to this service:
 
 ```kotlin
-// backend/src/main/kotlin/org/jetbrains/plugins/template/BackendChatRepositoryRpcApi.kt
 class BackendChatRepositoryRpcApi : ChatRepositoryRpcApi {
   override suspend fun getMessagesFlow(projectId: ProjectId): Flow<List<ChatMessageDto>> {
     val backendProject = projectId.findProjectOrNull()
@@ -244,10 +249,9 @@ class BackendChatRepositoryRpcApi : ChatRepositoryRpcApi {
 }
 ```
 
-On the frontend, `FrontendChatRepositoryModel` subscribes to this flow and exposes it as a `StateFlow`:
+On the frontend, [`FrontendChatRepositoryModel`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/frontend/src/main/kotlin/org/jetbrains/plugins/template/chatApp/viewmodel/FrontendChatRepositoryModel.kt) subscribes to this flow and exposes it as a `StateFlow`:
 
 ```kotlin
-// frontend/.../FrontendChatRepositoryModel.kt
 @Service(Level.PROJECT)
 class FrontendChatRepositoryModel(
   private val project: Project,
@@ -280,12 +284,12 @@ If this matters for your feature, make sure the service is initialized before it
 ### Use Serializable DTOs for RPC Transport
 
 Domain objects are not always directly serializable for transport over RPC.
-In this plugin, `ChatMessage` is the domain model used on both sides, but it contains `LocalDateTime`, which is not natively supported by `kotlinx.serialization`.
 
-The solution is a dedicated DTO class in the shared module:
+In the example plugin, [`ChatMessage`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/shared/src/main/kotlin/org/jetbrains/plugins/template/ChatMessage.kt) is the domain model used on both sides, but it contains `LocalDateTime`, which is not natively supported by `kotlinx.serialization`.
+
+The solution is a dedicated DTO class in the shared module, for example, [`ChatMessageDto`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/shared/src/main/kotlin/org/jetbrains/plugins/template/dtos.kt):
 
 ```kotlin
-// shared/src/main/kotlin/org/jetbrains/plugins/template/dtos.kt
 @Serializable
 data class ChatMessageDto(
   val id: String,
@@ -301,10 +305,9 @@ fun ChatMessageDto.toChatMessage(): ChatMessage { /* ... */ }
 fun ChatMessage.toChatMessageDto(): ChatMessageDto { /* ... */ }
 ```
 
-Custom `KSerializer` implementations can handle types that are not natively serializable:
+Custom `KSerializer` implementations can handle types that are not natively serializable, for example, [`LocalDateTimeSerializer`](https://github.com/JetBrains/intellij-platform-modular-plugin-template/blob/main/shared/src/main/kotlin/org/jetbrains/plugins/template/serializers.kt):
 
 ```kotlin
-// shared/src/main/kotlin/org/jetbrains/plugins/template/serializers.kt
 object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
   private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
