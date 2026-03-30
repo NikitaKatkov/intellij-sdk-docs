@@ -79,12 +79,12 @@ Also declare the backend platform module dependency in `modular.plugin.backend.x
 ```xml
 <!-- backend/src/main/resources/modular.plugin.backend.xml -->
 <idea-plugin>
-    <dependencies>
-        <module name="intellij.platform.backend"/>
-        <module name="intellij.platform.kernel.backend"/>
-        <module name="modular.plugin.shared"/>
-    </dependencies>
-    <!-- ... -->
+  <dependencies>
+    <module name="intellij.platform.backend"/>
+    <module name="intellij.platform.kernel.backend"/>
+    <module name="modular.plugin.shared"/>
+  </dependencies>
+  <!-- ... -->
 </idea-plugin>
 ```
 
@@ -96,15 +96,16 @@ Introduce the RPC interface in the shared module:
 // shared/src/main/kotlin/org/jetbrains/plugins/template/ChatRepositoryRpcApi.kt
 @Rpc
 interface ChatRepositoryRpcApi : RemoteApi<Unit> {
-    companion object {
-        suspend fun getInstance(): ChatRepositoryRpcApi {
-            return RemoteApiProviderService.resolve(remoteApiDescriptor<ChatRepositoryRpcApi>())
-        }
+  companion object {
+    suspend fun getInstance(): ChatRepositoryRpcApi {
+      return RemoteApiProviderService.resolve(
+        remoteApiDescriptor<ChatRepositoryRpcApi>()
+      )
     }
+  }
 
-    suspend fun getMessagesFlow(projectId: ProjectId): Flow<List<ChatMessageDto>>
-
-    suspend fun sendMessage(projectId: ProjectId, messageContent: String)
+  suspend fun getMessagesFlow(projectId: ProjectId): Flow<List<ChatMessageDto>>
+  suspend fun sendMessage(projectId: ProjectId, messageContent: String)
 }
 ```
 
@@ -124,18 +125,18 @@ Add a class implementing the RPC interface in the backend module:
 ```kotlin
 // backend/src/main/kotlin/org/jetbrains/plugins/template/BackendChatRepositoryRpcApi.kt
 class BackendChatRepositoryRpcApi : ChatRepositoryRpcApi {
-    override suspend fun getMessagesFlow(projectId: ProjectId): Flow<List<ChatMessageDto>> {
-        val backendProject = projectId.findProjectOrNull() ?: return emptyFlow()
-        return BackendChatRepositoryModel.getInstance(backendProject).getMessagesFlow()
-    }
+  override suspend fun getMessagesFlow(projectId: ProjectId): Flow<List<ChatMessageDto>> {
+    val backendProject = projectId.findProjectOrNull() ?: return emptyFlow()
+    return BackendChatRepositoryModel.getInstance(backendProject).getMessagesFlow()
+  }
 
-    override suspend fun sendMessage(
-        projectId: ProjectId,
-        messageContent: String
-    ) {
-        val backendProject = projectId.findProjectOrNull() ?: return
-        return BackendChatRepositoryModel.getInstance(backendProject).sendMessage(messageContent)
-    }
+  override suspend fun sendMessage(
+    projectId: ProjectId,
+    messageContent: String
+  ) {
+    val backendProject = projectId.findProjectOrNull() ?: return
+    return BackendChatRepositoryModel.getInstance(backendProject).sendMessage(messageContent)
+  }
 }
 ```
 
@@ -144,11 +145,11 @@ Implement `RemoteApiProvider`, which registers the RPC implementation with the p
 ```kotlin
 // backend/src/main/kotlin/org/jetbrains/plugins/template/BackendRpcApiProvider.kt
 internal class BackendRpcApiProvider : RemoteApiProvider {
-    override fun RemoteApiProvider.Sink.remoteApis() {
-        remoteApi(remoteApiDescriptor<ChatRepositoryRpcApi>()) {
-            BackendChatRepositoryRpcApi()
-        }
+  override fun RemoteApiProvider.Sink.remoteApis() {
+    remoteApi(remoteApiDescriptor<ChatRepositoryRpcApi>()) {
+      BackendChatRepositoryRpcApi()
     }
+  }
 }
 ```
 
@@ -157,16 +158,16 @@ Register the provider in `modular.plugin.backend.xml`:
 ```xml
 <!-- backend/src/main/resources/modular.plugin.backend.xml -->
 <idea-plugin>
-    <dependencies>
-        <module name="intellij.platform.backend"/>
-        <module name="intellij.platform.kernel.backend"/>
-        <module name="modular.plugin.shared"/>
-    </dependencies>
+  <dependencies>
+    <module name="intellij.platform.backend"/>
+    <module name="intellij.platform.kernel.backend"/>
+    <module name="modular.plugin.shared"/>
+  </dependencies>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <platform.rpc.backend.remoteApiProvider
-            implementation="com.example.BackendRpcApiProvider"/>
-    </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <platform.rpc.backend.remoteApiProvider
+      implementation="com.example.BackendRpcApiProvider"/>
+  </extensions>
 </idea-plugin>
 ```
 
@@ -175,8 +176,9 @@ Register the provider in `modular.plugin.backend.xml`:
 Now you can call `ChatRepositoryRpcApi` on the frontend:
 
 ```kotlin
-ChatRepositoryRpcApi.getInstance().getMessagesFlow(project.projectId())
-ChatRepositoryRpcApi.getInstance().sendMessage(project.projectId(), messageContent)
+val chatRepositoryApi = ChatRepositoryRpcApi.getInstance()
+chatRepositoryApi.getMessagesFlow(project.projectId())
+chatRepositoryApi.sendMessage(project.projectId(), messageContent)
 ```
 
 Note that all `getInstanceAsync()`, `getMessagesFlow()`, and `sendMessage()` functions are `suspend`, so they must be called in some coroutine context.
@@ -189,9 +191,11 @@ Such errors can be mitigated by using the `fleet.rpc.client.DurableKt.durable` w
 
 ```kotlin
 durable {
-   ChatRepositoryRpcApi.getInstanceAsync().getMessagesFlow(project.projectId()).collect { valueFromBackend ->
-	... // process the message
-   }
+  ChatRepositoryRpcApi.getInstanceAsync()
+    .getMessagesFlow(project.projectId())
+    .collect { valueFromBackend ->
+      ... // process the message
+    }
 }
 ```
 
@@ -209,15 +213,17 @@ There, `BackendChatRepositoryModel` holds a `MutableStateFlow` of messages on th
 // backend/src/main/kotlin/org/jetbrains/plugins/template/BackendChatRepositoryModel.kt
 @Service(Service.Level.PROJECT)
 class BackendChatRepositoryModel {
-    private val _messages = MutableStateFlow(listOf(/* initial messages */))
+  private val _messages = MutableStateFlow(listOf(/* initial messages */))
 
-    fun getMessagesFlow(): Flow<List<ChatMessageDto>> {
-        return _messages.map { messagesList -> messagesList.map(ChatMessage::toChatMessageDto) }
+  fun getMessagesFlow(): Flow<List<ChatMessageDto>> {
+    return _messages.map { messagesList ->
+      messagesList.map(ChatMessage::toChatMessageDto)
     }
+  }
 
-    suspend fun sendMessage(messageContent: String) {
-        // appends to _messages, triggering flow emissions
-    }
+  suspend fun sendMessage(messageContent: String) {
+    // appends to _messages, triggering flow emissions
+  }
 }
 ```
 
@@ -226,10 +232,12 @@ The RPC implementation simply delegates to this service:
 ```kotlin
 // backend/src/main/kotlin/org/jetbrains/plugins/template/BackendChatRepositoryRpcApi.kt
 class BackendChatRepositoryRpcApi : ChatRepositoryRpcApi {
-    override suspend fun getMessagesFlow(projectId: ProjectId): Flow<List<ChatMessageDto>> {
-        val backendProject = projectId.findProjectOrNull() ?: return emptyFlow()
-        return BackendChatRepositoryModel.getInstance(backendProject).getMessagesFlow()
-    }
+  override suspend fun getMessagesFlow(projectId: ProjectId): Flow<List<ChatMessageDto>> {
+    val backendProject = projectId.findProjectOrNull()
+      ?: return emptyFlow()
+    return BackendChatRepositoryModel.getInstance(backendProject)
+      .getMessagesFlow()
+  }
 }
 ```
 
@@ -239,17 +247,25 @@ On the frontend, `FrontendChatRepositoryModel` subscribes to this flow and expos
 // frontend/.../FrontendChatRepositoryModel.kt
 @Service(Level.PROJECT)
 class FrontendChatRepositoryModel(
-    private val project: Project,
-    coroutineScope: CoroutineScope
+  private val project: Project,
+  coroutineScope: CoroutineScope
 ) : ChatRepositoryApi {
-    override val messagesFlow: StateFlow<List<ChatMessage>> = flow {
-        durable {
-            ChatRepositoryRpcApi.getInstanceAsync().getMessagesFlow(project.projectId()).collect { valueFromBackend ->
-                val mappedValue = valueFromBackend.map { messageDto -> messageDto.toChatMessage() }
-                emit(mappedValue)
-            }
-        }
-    }.stateIn(coroutineScope, initialValue = emptyList(), started = SharingStarted.Lazily)
+  override val messagesFlow: StateFlow<List<ChatMessage>> = flow {
+    durable {
+      ChatRepositoryRpcApi.getInstanceAsync()
+        .getMessagesFlow(project.projectId())
+        .collect { valueFromBackend ->
+          val mappedValue = valueFromBackend.map { messageDto ->
+            messageDto.toChatMessage()
+          }
+          emit(mappedValue)
+      }
+    }
+  }.stateIn(
+     coroutineScope,
+     initialValue = emptyList(),
+     started = SharingStarted.Lazily
+  )
 }
 ```
 
@@ -269,13 +285,13 @@ The solution is a dedicated DTO class in the shared module:
 // shared/src/main/kotlin/org/jetbrains/plugins/template/dtos.kt
 @Serializable
 data class ChatMessageDto(
-    val id: String,
-    val content: String,
-    val author: String,
-    val isMyMessage: Boolean,
-    @Serializable(with = LocalDateTimeSerializer::class)
-    val timestamp: LocalDateTime,
-    val type: ChatMessage.ChatMessageType
+  val id: String,
+  val content: String,
+  val author: String,
+  val isMyMessage: Boolean,
+  @Serializable(with = LocalDateTimeSerializer::class)
+  val timestamp: LocalDateTime,
+  val type: ChatMessage.ChatMessageType
 )
 
 fun ChatMessageDto.toChatMessage(): ChatMessage { /* ... */ }
@@ -287,18 +303,18 @@ Custom `KSerializer` implementations can handle types that are not natively seri
 ```kotlin
 // shared/src/main/kotlin/org/jetbrains/plugins/template/serializers.kt
 object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
-    private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+  private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
+  override val descriptor: SerialDescriptor =
+    PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: LocalDateTime) {
-        encoder.encodeString(value.format(formatter))
-    }
+  override fun serialize(encoder: Encoder, value: LocalDateTime) {
+    encoder.encodeString(value.format(formatter))
+  }
 
-    override fun deserialize(decoder: Decoder): LocalDateTime {
-        return LocalDateTime.parse(decoder.decodeString(), formatter)
-    }
+  override fun deserialize(decoder: Decoder): LocalDateTime {
+    return LocalDateTime.parse(decoder.decodeString(), formatter)
+  }
 }
 ```
 
@@ -317,8 +333,8 @@ When you need to push events from the backend to the frontend without an explici
 // shared module
 @Serializable
 data class NewMessageEvent(
-    val projectId: ProjectId,
-    val messageId: String
+  val projectId: ProjectId,
+  val messageId: String
 )
 
 val NEW_MESSAGE_TOPIC: ProjectRemoteTopic<NewMessageEvent> =
@@ -330,12 +346,12 @@ val NEW_MESSAGE_TOPIC: ProjectRemoteTopic<NewMessageEvent> =
 ```kotlin
 // backend module
 class BackendChatRepositoryModel {
-    suspend fun sendMessage(messageContent: String) {
-        val userMessage = chatMessageFactory.createUserMessage(messageContent)
-        _messages.value += userMessage
+  suspend fun sendMessage(messageContent: String) {
+    val userMessage = chatMessageFactory.createUserMessage(messageContent)
+    _messages.value += userMessage
 
-        NEW_MESSAGE_TOPIC.send(NewMessageEvent(project.projectId(), userMessage.id)
-    }
+    NEW_MESSAGE_TOPIC.send(NewMessageEvent(project.projectId(), userMessage.id)
+  }
 }
 ```
 
@@ -344,11 +360,11 @@ class BackendChatRepositoryModel {
 ```kotlin
 // frontend module
 class NewMessageEventListener : ProjectRemoteTopicListener<NewMessageEvent> {
-    override val topic = NEW_MESSAGE_TOPIC
+  override val topic = NEW_MESSAGE_TOPIC
 
-    override fun handleEvent(event: NewMessageEvent) {
-        // React to the new message event
-    }
+  override fun handleEvent(event: NewMessageEvent) {
+    // React to the new message event
+  }
 }
 ```
 
@@ -358,8 +374,8 @@ In `modular.plugin.frontend.xml`:
 
 ```xml
 <extensions defaultExtensionNs="com.intellij">
-    <platform.rpc.projectRemoteTopicListener
-        implementation="org.jetbrains.plugins.template.NewMessageEventListener"/>
+  <platform.rpc.projectRemoteTopicListener
+    implementation="org.jetbrains.plugins.template.NewMessageEventListener"/>
 </extensions>
 ```
 
