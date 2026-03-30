@@ -4,7 +4,7 @@
 
 <link-summary>Synchronize persistent plugin settings correctly between frontend and backend in Split Mode.</link-summary>
 
-This article shows how to make a **`PersistentStateComponent`** synchronize correctly between the frontend and the backend.
+This article shows how to make a `PersistentStateComponent` synchronize correctly between the frontend and the backend.
 
 At a high level, you will:
 
@@ -22,15 +22,21 @@ Start by implementing your settings component as you normally would.
 If you use `SimplePersistentStateComponent`, it is a good idea to override `noStateLoaded()`. This helps handle the case in which the remote side sends an empty state: instead of leaving the component in an unexpected state, you can explicitly reset it to its defaults.
 
 ```kotlin
-@State(name = "MySettings", storages = [Storage("my-settings.xml")])
-class MySettings : SimplePersistentStateComponent<MySettings.State>(State()) {
-    class State {
-        var mySetting: Boolean = true
-    }
+@State(
+  name = "MySettings",
+  storages = [Storage("my-settings.xml")]
+)
+class MySettings :
+    SimplePersistentStateComponent<MySettings.State>(State()) {
 
-    override fun noStateLoaded() {
-        loadState(State()) // Reset to defaults when remote sends empty state
-    }
+  class State {
+    var mySetting: Boolean = true
+  }
+
+  override fun noStateLoaded() {
+    // Reset to defaults when remote sends empty state:
+    loadState(State())
+  }
 }
 ```
 
@@ -51,22 +57,23 @@ Example:
 
 ```kotlin
 class MySettingsRemoteInfoProvider : RemoteSettingInfoProvider {
-    override fun getRemoteSettingsInfo() = mapOf(
-        "MySettings" to RemoteSettingInfo(direction = Direction.InitialFromFrontend)
-        // Use InitialFromBackend for project-level settings
-    )
+  override fun getRemoteSettingsInfo() = mapOf(
+    "MySettings" to RemoteSettingInfo(direction = Direction.InitialFromFrontend)
+    // Use InitialFromBackend for project-level settings
+  )
 }
 ```
 
 Then register it in `plugin.xml`:
 
 ```xml
-<extensionPoint name="remoteSettingInfoProvider"
-                interface="...RemoteSettingInfoProvider"/>
+<extensionPoint
+    name="remoteSettingInfoProvider"
+    interface="...RemoteSettingInfoProvider"/>
 
 <extensions defaultExtensionNs="...">
-    <remoteSettingInfoProvider
-        implementation="com.example.MySettingsRemoteInfoProvider"/>
+  <remoteSettingInfoProvider
+      implementation="com.example.MySettingsRemoteInfoProvider"/>
 </extensions>
 ```
 
