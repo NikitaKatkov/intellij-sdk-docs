@@ -13,7 +13,7 @@ The lists are intentionally conservative.
 Treat them as placement defaults rather than an exhaustive type system.
 If a feature needs a different placement, review the specific API behavior and validate the result in [Split Mode](split_mode_for_remote_development.md).
 
-Inspection <ui-path>Plugin DevKit | Code | ActionUpdateThread is missing</ui-path> highlights inappropriate API usage.
+Inspection <ui-path>Plugin DevKit | Code | Frontend and Backend API Usage</ui-path> highlights inappropriate API usage.
 
 See also [Modular Plugins](modular_plugins.md) and [](split_mode_feature_development.md).
 
