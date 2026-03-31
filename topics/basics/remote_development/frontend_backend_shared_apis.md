@@ -87,7 +87,23 @@ The following APIs usually belong in the backend module:
 
 ## Shared APIs
 
-The following APIs are commonly used in shared code:
+
+The following APIs **can** be used in both frontend and backend modules.
+
+This list currently includes two categories of APIs: language support–related extensions and project/application lifecycle listeners.
+
+Language support should be implemented in the shared module so that PSI can be used on both sides.
+The frontend benefits from language support extensions because they enable a fast local editing experience and make it possible to build features on top of them.
+For example, a typing handler naturally belongs in the frontend, and it requires PSI for the file type it supports.
+The backend also benefits from language support because backend-specific extensions depend on it as well.
+For example, an inspection that naturally belongs in the backend requires PSI to traverse the file.
+
+The other category consists of application and project lifecycle listeners.
+Since their implementations may produce arbitrary side effects, it is up to the plugin developer to decide whether those effects should run in the backend or the frontend.
+For example, if a plugin needs to install and run an external tool after a project is loaded, it should be registered in the backend.
+If it needs to display a survey UI with a feedback form after a user changes a registry key, it should run in the frontend.
+I can also make it more concise or more formal, depending on where you want to publish it.
+
 
 - [`com.intellij.lang.ParserDefinition`](%gh-ic%/platform/core-api/src/com/intellij/lang/ParserDefinition.java)
 - [`com.intellij.openapi.util.registry.RegistryValueListener`](%gh-ic%/platform/util/src/com/intellij/openapi/util/registry/RegistryValueListener.java)
