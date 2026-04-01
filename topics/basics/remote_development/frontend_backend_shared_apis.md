@@ -104,8 +104,6 @@ The other category consists of application and project lifecycle listeners.
 Since their implementations may produce arbitrary side effects, it is up to the plugin developer to decide whether those effects should run in the backend or the frontend.
 For example, if a plugin needs to install and run an external tool after a project is loaded, it should be registered in the backend.
 If it needs to display a survey UI with a feedback form after a user changes a registry key, it should run in the frontend.
-I can also make it more concise or more formal, depending on where you want to publish it.
-
 
 - [`com.intellij.lang.ParserDefinition`](%gh-ic%/platform/core-api/src/com/intellij/lang/ParserDefinition.java)
 - [`com.intellij.openapi.util.registry.RegistryValueListener`](%gh-ic%/platform/util/src/com/intellij/openapi/util/registry/RegistryValueListener.java)
