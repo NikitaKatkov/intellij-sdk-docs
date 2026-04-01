@@ -90,7 +90,9 @@ The following APIs usually belong in the backend module:
 
 The following APIs **can** be used in both frontend and backend modules.
 
-This list currently includes two categories of APIs: language support–related extensions and project/application lifecycle listeners.
+This list currently includes two categories of APIs:
+- language support–related extensions
+- project/application lifecycle listeners
 
 Language support should be implemented in the shared module so that PSI can be used on both sides.
 The frontend benefits from language support extensions because they enable a fast local editing experience and make it possible to build features on top of them.
