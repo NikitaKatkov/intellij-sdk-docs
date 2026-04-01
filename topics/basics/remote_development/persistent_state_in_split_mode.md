@@ -2,6 +2,8 @@
 
 # Persistent State Component in Split Mode
 
+<primary-label ref="2025.3"/>
+
 <link-summary>Synchronize persistent plugin settings correctly between frontend and backend in Split Mode.</link-summary>
 
 This article shows how to make a [Persistent State Component](persisting_state_of_components.md) synchronize correctly between the frontend and the backend.
