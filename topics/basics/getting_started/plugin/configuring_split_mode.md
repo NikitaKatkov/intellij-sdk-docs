@@ -5,7 +5,7 @@
 <link-summary>Configure Gradle so a plugin can run, debug, and test with separate frontend and backend processes.</link-summary>
 
 Split Mode configuration in the Gradle build script allows for running development sandbox IDEs in mode emulating the [remote development](split_mode_for_remote_development.md) scenario, with both frontend and backend processes running locally.
-To make a plugin work natively in split mode, familiarize yourself with [plugin modularization](modular_plugins.md).
+To make a plugin work natively in split mode, see [plugin modularization](modular_plugins.md).
 
 ## Basic Configuration
 
