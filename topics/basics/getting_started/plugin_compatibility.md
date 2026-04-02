@@ -165,7 +165,7 @@ Use the same development version of the IntelliJ Platform as the targeted produc
 Based on the tables above, the [JetBrains Marketplace](https://plugins.jetbrains.com/) automatically detects the JetBrains products with which a plugin is compatible and makes the compatibility information available to plugin authors.
 The compatibility information determines if plugins are available for users of a particular JetBrains product.
 In remote development, the same compatibility logic is applied separately to the backend and frontend installations, so a plugin may end up available on one side or on both.
-See [Plugin Management](plugin_management_in_remote_development.md).
+See [Plugin Management](plugin_management_in_split_mode.md).
 
 ## Platform API Version Compatibility
 

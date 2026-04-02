@@ -39,7 +39,7 @@ For split plugin development, `BOTH` is the most common choice.
 
 > `splitModeTarget` only controls where the plugin is placed in locally run development sandboxes.
 > It doesn't describe end-user installation or synchronization behavior in split mode.
-> See [Plugin Management](plugin_management_in_remote_development.md).
+> See [Plugin Management](plugin_management_in_split_mode.md).
 >
 {style="note"}
 
