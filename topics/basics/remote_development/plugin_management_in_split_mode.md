@@ -20,9 +20,11 @@ A plugin may be:
 - compatible only with the frontend
 - compatible with both sides
 
-Compatibility is determined by the dependencies declared by the plugin and its content modules. By default, content modules are optional,
-which means that if a particular module's dependencies are not satisfied, that module is not loaded, but this does not affect the loading of other plugin modules.
-As a result, if the plugin dependencies are satisfied, the plugin is loaded. If a plugin consists of multiple modules and the dependencies of at least one module are satisfied, the plugin is loaded. For more details about modules and dependencies, see [Modular Plugins](modular_plugins.md).
+Compatibility is determined by the dependencies declared by the plugin and its content modules.
+By default, content modules are optional, which means that if a particular module's dependencies are not satisfied, that module is not loaded, but this does not affect the loading of other plugin modules.
+As a result, if the plugin dependencies are satisfied, the plugin is loaded.
+If a plugin consists of multiple modules and the dependencies of at least one module are satisfied, the plugin is loaded.
+For more details about modules and dependencies, see [Modular Plugins](modular_plugins.md).
 
 When a plugin is installed from JetBrains Marketplace, the plugin manager checks its compatibility with both the frontend and the backend and installs it wherever its dependencies are satisfied.
 
@@ -36,7 +38,6 @@ If a difference is detected, the IDE shows a plugin synchronization notification
 Plugin synchronization currently works only for plugins that are available on [JetBrains Marketplace](https://plugins.jetbrains.com).
 
 If a plugin is installed only from a local ZIP or JAR file, the synchronization flow cannot resolve it for the other side through Marketplace metadata.
-For a more convenient installation method than ad hoc local archives, consider publishing your plugin to JetBrains Marketplace
-or using a [Custom Plugin Repository](custom_plugin_repository.md).
+For a more convenient installation method than ad hoc local archives, consider publishing the plugin to JetBrains Marketplace or using a [custom plugin repository](custom_plugin_repository.md).
 
 <include from="snippets.topic" element-id="missingContent"/>
