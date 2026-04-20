@@ -92,7 +92,7 @@ Describes a mode in which a product may be started. This can be configured on th
 
 See also:
 - [Dependencies Extension: Dependency Configuration Parameters](tools_intellij_platform_gradle_plugin_dependencies_extension.md#dependency-configuration-parameters)
-- [Types: SplitModeAware.SplitModeTarget](tools_intellij_platform_gradle_plugin_types.md#SplitModeAware-SplitModeTarget)
+- [Types: SplitModeAware.PluginInstallationTarget](tools_intellij_platform_gradle_plugin_types.md#SplitModeAware-PluginInstallationTarget)
 
 ## `PluginBean`
 {#PluginBean}
@@ -205,11 +205,10 @@ Used internally by the Gradle plugin to propagate platform settings across confi
 | `useCache`     | Whether a custom cache directory should be used when resolving the platform.      |
 | `productMode`  | Desired product mode. See [`ProductMode`](#ProductMode).                          |
 
+## `SplitModeAware.PluginInstallationTarget` (formerly `SplitModeTarget`)
+{#SplitModeAware-PluginInstallationTarget}
 
-## `SplitModeAware.SplitModeTarget`
-{#SplitModeAware-SplitModeTarget}
-
-[`SplitModeAware.SplitModeTarget`](%gh-ijpgp%/src/main/kotlin/org/jetbrains/intellij/platform/gradle/tasks/aware/SplitModeAware.kt)
+[`SplitModeAware.PluginInstallationTarget`](%gh-ijpgp%/src/main/kotlin/org/jetbrains/intellij/platform/gradle/tasks/aware/SplitModeAware.kt)
 
 Describes a part of the product where the developed plugin can be installed when running in _splitMode_ handled by [`SplitModeAware`](tools_intellij_platform_gradle_plugin_task_awares.md#SplitModeAware).
 
@@ -218,7 +217,6 @@ Describes a part of the product where the developed plugin can be installed when
 | `BACKEND`  | Install plugin in the backend IDE.                |
 | `FRONTEND` | Install plugin in the frontend IDE.               |
 | `BOTH`     | Install plugin in both backend and frontend IDEs. |
-
 
 ## `Subsystems`
 {#Subsystems}

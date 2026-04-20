@@ -1037,7 +1037,7 @@ Type
 : `DirectoryProperty`
 
 Default value
-: [`SandboxAware.sandboxPluginsDirectory`](tools_intellij_platform_gradle_plugin_task_awares.md#SandboxAware-sandboxPluginsDirectory), or [`SplitModeAware.sandboxPluginsFrontendDirectory`](tools_intellij_platform_gradle_plugin_task_awares.md#SplitModeAware-sandboxPluginsFrontendDirectory) when [`splitModeTarget`](tools_intellij_platform_gradle_plugin_task_awares.md#SplitModeAware-splitModeTarget) is `FRONTEND`
+: [`SandboxAware.sandboxPluginsDirectory`](tools_intellij_platform_gradle_plugin_task_awares.md#SandboxAware-sandboxPluginsDirectory), or [`SplitModeAware.sandboxPluginsFrontendDirectory`](tools_intellij_platform_gradle_plugin_task_awares.md#SplitModeAware-sandboxPluginsFrontendDirectory) when [`pluginInstallationTarget`](tools_intellij_platform_gradle_plugin_task_awares.md#SplitModeAware-pluginInstallationTarget) is `FRONTEND`
 
 
 ### `pluginName`

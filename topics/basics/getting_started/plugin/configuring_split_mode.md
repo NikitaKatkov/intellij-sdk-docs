@@ -18,18 +18,18 @@ Enable Split Mode in the `intellijPlatform {}` extension:
 ```kotlin
 intellijPlatform {
   splitMode = true
-  splitModeTarget = SplitModeAware.SplitModeTarget.BOTH
+  pluginInstallationTarget = SplitModeAware.PluginInstallationTarget.BOTH
 }
 ```
 
 The two relevant properties are:
 
 - [`splitMode`](tools_intellij_platform_gradle_plugin_extension.md#intellijPlatform-splitMode) – starts separate frontend and backend processes
-- [`splitModeTarget`](tools_intellij_platform_gradle_plugin_extension.md#intellijPlatform-splitModeTarget) – selects where the plugin is installed
+- [`pluginInstallationTarget`](tools_intellij_platform_gradle_plugin_extension.md#intellijPlatform-pluginInstallationTarget) – selects where the plugin is installed
 
 ## Choosing the Installation Target
 
-Choose `splitModeTarget` according to the code being exercised:
+Choose `pluginInstallationTarget` according to the code being exercised:
 
 - `BACKEND` for backend-only functionality
 - `FRONTEND` for frontend-only functionality
@@ -37,7 +37,7 @@ Choose `splitModeTarget` according to the code being exercised:
 
 For split plugin development, `BOTH` is the most common choice.
 
-> `splitModeTarget` only controls where the plugin is placed in locally run development sandboxes.
+> `pluginInstallationTarget` only controls where the plugin is placed in locally run development sandboxes.
 > It doesn't describe end-user installation or synchronization behavior in split mode.
 > See [Plugin Management](plugin_management_in_split_mode.md).
 >
@@ -50,12 +50,12 @@ Custom split-mode tasks can be declared with `intellijPlatformTesting`:
 ```kotlin
 val runIdeSplitMode by intellijPlatformTesting.runIde.registering {
   splitMode = true
-  splitModeTarget = SplitModeAware.SplitModeTarget.BOTH
+  pluginInstallationTarget = SplitModeAware.PluginInstallationTarget.BOTH
 }
 
 val testIdeUiSplitMode by intellijPlatformTesting.testIdeUi.registering {
   splitMode = true
-  splitModeTarget = SplitModeAware.SplitModeTarget.BOTH
+  pluginInstallationTarget = SplitModeAware.PluginInstallationTarget.BOTH
 }
 ```
 
