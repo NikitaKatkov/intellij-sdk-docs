@@ -13,7 +13,7 @@ Persisting the state of components for IntelliJ Platform plugins and sharing set
 The IntelliJ Platform provides an API that allows components or services to persist their state between restarts of the IDE.
 The API allows for persisting simple key-value entries and complex state classes.
 
-> [Split plugins](split_mode_for_remote_development.md) may need explicit frontend and backend synchronization metadata in addition to a regular `PersistentStateComponent` implementation.
+> [Split plugins](split_mode_and_remote_development.md) may need explicit frontend and backend synchronization metadata in addition to a regular `PersistentStateComponent` implementation.
 > See [](persistent_state_in_split_mode.md).
 >
 {style="note" title="Split Mode"}

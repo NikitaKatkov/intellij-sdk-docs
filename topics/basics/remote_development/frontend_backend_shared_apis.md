@@ -13,7 +13,7 @@ This page lists APIs that commonly indicate where plugin code should live in a s
 
 The lists are intentionally conservative.
 Treat them as placement defaults rather than an exhaustive type system.
-If a feature needs a different placement, review the specific API behavior and validate the result in [Split Mode](split_mode_for_remote_development.md).
+If a feature needs a different placement, review the specific API behavior and validate the result in [Split Mode](split_mode_and_remote_development.md).
 
 Inspection <ui-path>Plugin DevKit | Code | Frontend and Backend API Usage</ui-path> highlights inappropriate API usage.
 

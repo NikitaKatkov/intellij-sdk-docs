@@ -802,12 +802,12 @@ Type
 
 </tldr>
 
-When you develop a plugin, you may want to check how it works in [split mode](split_mode_for_remote_development.md), when one machine is running the backend part and another is running a frontend part (JetBrains Client) which connects to the backend.
+When you develop a plugin, you may want to check how it works in [split mode](split_mode_and_remote_development.md), when one machine is running the backend part and another is running a frontend part (JetBrains Client) which connects to the backend.
 
 This property allows running the IDE with backend and frontend parts running in separate processes.
 Use `splitModeTarget` to specify whether the developed plugin is installed in the frontend, backend, or both parts.
 
-[Split Mode](split_mode_for_remote_development.md) requires the IntelliJ Platform in the version `241.14473` or later.
+[Split Mode](split_mode_and_remote_development.md) requires the IntelliJ Platform in the version `241.14473` or later.
 
 
 ### `splitMode`

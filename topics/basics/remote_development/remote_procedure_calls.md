@@ -6,7 +6,7 @@
 
 <link-summary>Set up RPC between shared, frontend, and backend plugin modules in Split Mode.</link-summary>
 
-This article walks through how remote calls (RPC) are set up in [Split Mode](split_mode_for_remote_development.md) and refers to code in the publicly available [modular plugin template](https://github.com/JetBrains/intellij-platform-modular-plugin-template).
+This article walks through how remote calls (RPC) are set up in [Split Mode](split_mode_and_remote_development.md) and refers to code in the publicly available [modular plugin template](https://github.com/JetBrains/intellij-platform-modular-plugin-template).
 
 ## Modules Overview
 
