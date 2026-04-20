@@ -63,8 +63,7 @@
         <p>
             If you're having problems with the guide itself, such as missing, incorrect, or confusing content, please
             <a href="https://youtrack.jetbrains.com/newIssue?project=IJSDK&amp;clearDraft=true&amp;c=">
-                raise an issue on YouTrack
-            </a>.
+                raise an issue on YouTrack</a>.
             If the problem is easily solved, you can also submit a
             <a href="intellij-sdk-docs-original_CONTRIBUTING.md">Pull Request</a>.
         </p>
@@ -72,8 +71,8 @@
             If you want to report (smaller) issues for a
             <emphasis>specific</emphasis>
             page, you can also use the
-            <control>Was this page helpful?</control>
-            feedback form on the bottom of each page by providing more details after clicking the
+            <control>Feedback</control>
+            widget (visible on the right) by providing more details after clicking the
             <control>No</control>
             button.
             Please try to be as specific as possible and provide your e-mail address for further questions and getting
@@ -102,8 +101,8 @@
         </p>
 
         <p>
-            如果你想报告特定页面的（小）问题，你还可以使用每个页面底部的 Was this page helpful
-            反馈表，方法是点击No按钮后提供更多详细信息。请尽量具体的描述您的问题并提供您的电子邮件地址，以便于后续问题沟通并在更新时获取通知。
+            如果你想报告特定页面的（小）问题，你还可以使用页面右侧的 <control>Feedback</control>
+                小组件，方法是点击 <control>No</control> 按钮后提供更多详细信息。请尽量具体的描述您的问题并提供您的电子邮件地址，以便于后续问题沟通并在更新时获取通知。
         </p>
 
         <p>

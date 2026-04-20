@@ -16,7 +16,7 @@
 
 ### Navigation inside a window
 
-Use a regular link for navigation between pages of the same window. In the example bellow <control>Manage scopes…</control> opens another page in Settings for editing the values.
+Use a regular link for navigation between pages of the same window. In the example below <control>Manage scopes…</control> opens another page in Settings for editing the values.
 
 <table style="none" border="false">
   <tr>
@@ -141,17 +141,17 @@ These controls can be selected from the keyboard and are bigger and easier to cl
 
 #### Use sentence capitalization
 
-Follow the [sentence capilaziation](capitalization.md#sentence) guideline.
+Follow the [sentence capitalization](capitalization.md#sentence) guideline.
 
 <table style="none" border="false">
   <tr>
     <td>
       <format color="369650" style="bold">Correct</format>
-      <img src="link_how_to_1_correct.png" width="378" alt="A 'Modify options' drod-down with the sentence style capitalization."/>
+      <img src="link_how_to_1_correct.png" width="378" alt="A 'Modify options' drop-down with the sentence style capitalization."/>
     </td>
     <td>
       <format color="E55765" style="bold">Incorrect</format>
-      <img src="link_how_to_1_incorrect.png" width="378" alt="A 'Modify Options' drod-down with the title style capitalization."/>
+      <img src="link_how_to_1_incorrect.png" width="378" alt="A 'Modify Options' drop-down with the title style capitalization."/>
     </td>
   </tr>
 </table>
@@ -224,7 +224,7 @@ When possible, replace <code>Learn more</code> and other generic phrases with mo
 
 A link can be a part of a checkbox or radio button label or of any stand-alone text, like the text in an [empty state](empty_state.md) or in [context help](context_help.md):
 
-![Checkbox 'Use console font instead of the default font' where 'deafult font' is a link.](link_how_to_6.png){width=706}
+![Checkbox 'Use console font instead of the default font' where 'default font' is a link.](link_how_to_6.png){width=706}
 
 Make a link the minimum phrase that is enough to understand what will happen without reading the whole text:
 

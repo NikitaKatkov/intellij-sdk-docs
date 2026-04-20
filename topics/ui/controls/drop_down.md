@@ -50,7 +50,7 @@ The screen space is limited, so there is not enough room for [radio buttons](rad
 
 The default value is recommended for most users. A drop-down is a good way to hide unpopular alternatives.
 
-In the example bellow a drop-down is used because <control>Subpixels</control> is the most popular choice. Using [radio-buttons](radio_button.md)  puts all options on the same level of importance or popularity.
+In the example below a drop-down is used because <control>Subpixels</control> is the most popular choice. Using [radio-buttons](radio_button.md)  puts all options on the same level of importance or popularity.
 
 ![Antialiasing drop-down with options: Subpixels (selected), Greyscale, Not antialiasing](dropdown_when_to_5.png){width=706}
 
@@ -161,7 +161,7 @@ Follow the rules for the [input field](input_field.md#label).
 
 ### Default value
 
-Select the most likely or the safest value by default. In the xample bellow the safest value is <control>Ask</control>, the behavior will not be unexpected to users:
+Select the most likely or the safest value by default. In the example below the safest value is <control>Ask</control>, the behavior will not be unexpected to users:
 
 ![Drop-down menu labeled 'Insert imports on paste' with options 'All', 'Ask', and 'None'. The selected option set to 'Ask'.](dropdown_how_to_2.png){width=706}
 

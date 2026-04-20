@@ -37,7 +37,7 @@ Each entry is mapped to its corresponding _Replacement_, pointing to the recomme
 > In some cases, such documentation might not be available inside the IDE for the current target platform version.
 > Use <control>Go to file</control> to browse the latest version in the [intellij-community](%gh-ic%/) GitHub repository instead.
 >
-> Use the feedback form at the bottom of this page if you encounter missing or unclear information.
+> Use the <control>Feedback</control> widget displayed on the right if you encounter missing or unclear information.
 >
 {style="note"}
 
