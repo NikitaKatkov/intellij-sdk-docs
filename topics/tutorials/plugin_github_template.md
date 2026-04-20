@@ -8,13 +8,13 @@ The IntelliJ Platform Plugin Template is the alternative solution for creating a
 
 ## Modular Plugin Template
 
-> The modular template is intended for plugins that are designed for [Split Mode](split_mode_for_remote_development.md) and modular plugin packaging from the start.
+> The modular template is intended for plugins that are designed for [Split Mode](split_mode_and_remote_development.md) and modular plugin packaging from the start.
 >
 {style="note" title="Experimental"}
 
 With increasing demand for the remote development support, JetBrains advices plugin developers to design their plugins modularly where UI and business logic are detached from each other.
 
-Use the modular template when a plugin is expected to provide optimal low-latency UX and correct project interaction in [Split Mode](split_mode_for_remote_development.md) as well as in a monolithic IDE. To start developing a [split plugin](split_mode_for_remote_development.md), use the [IntelliJ Platform Modular Plugin Template](https://github.com/JetBrains/intellij-platform-modular-plugin-template).
+Use the modular template when a plugin is expected to provide optimal low-latency UX and correct project interaction in [Split Mode](split_mode_and_remote_development.md) as well as in a monolithic IDE. To start developing a [split plugin](split_mode_and_remote_development.md), use the [IntelliJ Platform Modular Plugin Template](https://github.com/JetBrains/intellij-platform-modular-plugin-template).
 
 The modular template provides:
 * frontend, backend, and shared module layout

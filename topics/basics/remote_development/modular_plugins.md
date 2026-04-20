@@ -29,7 +29,7 @@ In such cases, it's possible to use the new modular plugin format: Plugin Model 
 
 ## Typical Split Mode Layout
 
-A [split plugin](split_mode_for_remote_development.md) commonly contains at least three modules:
+A [split plugin](split_mode_and_remote_development.md) commonly contains at least three modules:
 
 - shared module: DTOs, RPC interfaces, remote topics, and other code used on both sides
 - frontend module: user interface, editor-side interactions, and other latency-sensitive behavior

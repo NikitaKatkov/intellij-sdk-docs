@@ -15,7 +15,7 @@ At a high level, it requires:
 3. [Declaring the settings in XML so the initial synchronization can happen.](#3-declare-the-settings-in-xml)
 4. [Choosing the right sync direction for a use case.](#4-choose-the-right-sync-direction)
 
-This setup is especially important in [split mode](split_mode_for_remote_development.md), where settings may exist on both sides and need to stay in sync.
+This setup is especially important in [split mode](split_mode_and_remote_development.md), where settings may exist on both sides and need to stay in sync.
 
 ## 1. Create a `PersistentStateComponent`
 

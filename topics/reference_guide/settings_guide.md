@@ -9,7 +9,7 @@ On this page, the term "Settings" means the same as "Preferences" on some platfo
 
 Plugins can create and store Settings to capture their configuration in a way that uses the IntelliJ Platform [Persistence Model](persisting_state_of_components.md).
 The User Interface (UI) for these custom Settings can be added to the [IDE Settings dialog](https://www.jetbrains.com/help/idea/settings-preferences-dialog.html).
-For [split plugins](split_mode_for_remote_development.md), settings persistence may also require explicit frontend and backend synchronization.
+For [split plugins](split_mode_and_remote_development.md), settings persistence may also require explicit frontend and backend synchronization.
 See [](persistent_state_in_split_mode.md).
 
 Settings can [affect different levels](https://www.jetbrains.com/help/idea/configuring-project-and-ide-settings.html) of scope.

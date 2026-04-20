@@ -11,8 +11,8 @@ Create and run a Gradle-based IntelliJ Platform plugin project using the IDE Plu
 This documentation page describes a Gradle-based plugin project generated with the [New Project Wizard](https://www.jetbrains.com/help/idea/new-project-wizard.html)
 in IntelliJ IDEA, but the project generated with [](plugin_github_template.md) covers all the described files and directories.
 
-> New plugin projects should be implemented in a way that supports working in Remote Development mode or so-called [Split Mode](split_mode_for_remote_development.md).
-> Review [](split_mode_for_remote_development.md) before settling on module boundaries.
+> New plugin projects should be implemented in a way that supports working in Remote Development mode or so-called [Split Mode](split_mode_and_remote_development.md).
+> Review [](split_mode_and_remote_development.md) before settling on module boundaries.
 >
 {style="note" title="Plan for Split Mode"}
 

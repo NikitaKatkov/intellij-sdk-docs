@@ -11,7 +11,7 @@ This article explains how the platform determines that and how plugin synchroniz
 
 A separate question is which *modules* of an installed plugin are actually loaded in each process.
 For split plugins, module loadability is controlled by content-module dependencies such as `intellij.platform.backend` and `intellij.platform.frontend`.
-See [Modular Plugins](modular_plugins.md) and [Split Mode](split_mode_for_remote_development.md) for details.
+See [Modular Plugins](modular_plugins.md) and [Split Mode](split_mode_and_remote_development.md) for details.
 
 ## Compatibility Check
 
