@@ -67,13 +67,24 @@ See [](tools_intellij_platform_gradle_plugin_testing_extension.md) for more deta
 After the Gradle configuration is in place, the next step is deciding how the plugin code should be distributed between frontend, backend, and shared modules.
 See [](split_mode_feature_development.md).
 
-## Necessary plugin and library versions
+## Required Gradle Plugin and Library Versions
 
-The following table lists the recommended versions of plugins and libraries for split mode development, tailored for compatibility with the specified IntelliJ Platform versions.
+The following tables list recommended versions of Gradle plugins and libraries for split mode development, tailored for compatibility with the specified IntelliJ Platform versions.
 
-| IntelliJ Platform                                    | 2025.3       | 2026.1         |
-|------------------------------------------------------|--------------|----------------|
-| `rpc` _plugin_                                       | 2.1.20-0.1   | 2.3.20-RC2-0.1 |
-| `org.jetbrains.kotlin.plugin.serialization` _plugin_ | 2.1.20       | 2.3.20         |
-| `kotlinx-serialization-core-jvm` _library_           | 1.7.3        | 1.9.0          |
-| `kotlinx-serialization-json-jvm` _library_           | 1.7.3        | 1.9.0          |
+### Gradle Plugins
+
+| **IntelliJ Platform** | `rpc`          | `org.jetbrains.kotlin.plugin.serialization` |
+|-----------------------|----------------|---------------------------------------------|
+| **2026.1**            | 2.3.20-RC2-0.1 | 2.3.20                                      |
+| **2025.3**            | 2.1.20-0.1     | 2.1.20                                      |
+
+{style=header-column}
+
+
+### Libraries
+
+| **IntelliJ Platform** | `kotlinx-serialization-core-jvm` | `kotlinx-serialization-json-jvm` |
+|-----------------------|----------------------------------|----------------------------------|
+| **2026.1**            | 1.9.0                            | 1.9.0                            |
+| **2025.3**            | 1.7.3                            | 1.7.3                            |
+{style=header-column}
