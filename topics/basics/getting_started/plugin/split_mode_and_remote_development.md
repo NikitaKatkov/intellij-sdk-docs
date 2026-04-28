@@ -145,11 +145,14 @@ To add it in an existing project, use the steps below.
 
 <procedure title="Creating the Run IDE (Split Mode) Run Configuration">
 
-1. Make sure you are using the IntelliJ Gradle plugin version 2.14 or higher
+1. Make sure you are using the IntelliJ Platform Gradle Plugin version 2.14 or higher
 2. Call the `:generateSplitModeRunConfigurations` task via Execute Gradle Task action or via terminal
-3. Once finished, the task will produce a run configuration that can be selected in the run widget and used for debugging or running as usual
+3. Once finished, the task will produce a compound `Run IDE (Split Mode)` run configuration that can be selected in the run widget and used for debugging or running as usual
+4. Starting with IntelliJ Platform Gradle Plugin 2.15.0, the run generated run configurations show the full backend or frontend IDE log files in additional tabs
 
 </procedure>
+
+To enable additional `DEBUG` or `TRACE` logging categories for the split-mode backend or frontend process, configure the `runIdeBackend` and `runIdeFrontend` tasks in the Gradle build script as described in [Configuring a Plugin for Split Mode](configuring_split_mode.md).
 
 ## Testing Split Mode Manually and Emulating Latency
 

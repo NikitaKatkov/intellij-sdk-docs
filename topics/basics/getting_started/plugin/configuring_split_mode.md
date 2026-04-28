@@ -62,6 +62,26 @@ val testIdeUiSplitMode by intellijPlatformTesting.testIdeUi.registering {
 These tasks get dedicated sandboxes and can be used like other development or test tasks.
 See [](tools_intellij_platform_gradle_plugin_testing_extension.md) for more details.
 
+## Configuring Debug and Trace Logs
+
+Starting with IntelliJ Platform Gradle Plugin 2.15.0, Split Mode provides dedicated `runIdeBackend` and `runIdeFrontend` tasks, so additional log categories can be enabled separately for each process.
+
+```kotlin
+tasks {
+  // Set up the additional debug/trace log categories if needed.
+  runIdeBackend {
+    systemProperty("idea.log.debug.categories", "com.example.plugin.backend")
+  }
+  runIdeFrontend {
+    systemProperty("idea.log.trace.categories", "com.example.plugin.frontend")
+  }
+}
+```
+
+Set `idea.log.debug.categories` or `idea.log.trace.categories` to the package or logger category names that should be enabled in the corresponding IDE process.
+Use a comma-separated list to enable multiple categories.
+If needed, either property can be applied to either task.
+
 ## Typical Next Step
 
 After the Gradle configuration is in place, the next step is deciding how the plugin code should be distributed between frontend, backend, and shared modules.
