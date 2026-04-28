@@ -153,6 +153,8 @@ The LSP support provided by the IntelliJ Platform covers the following features 
 - Range Formatting ([`textDocument/rangeFormatting`](https://microsoft.github.io/language-server-protocol/specification/#textDocument_rangeFormatting)) ([IJPL-189558](https://youtrack.jetbrains.com/issue/IJPL-189558))
 - Code Lens ([`textDocument/codeLens`](https://microsoft.github.io/language-server-protocol/specification/#textDocument_codeLens)) ([IJPL-189563](https://youtrack.jetbrains.com/issue/IJPL-189563))
 - Optimize Imports ([`textDocument/codeAction`](https://microsoft.github.io/language-server-protocol/specification/#textDocument_codeAction) with `source.organizeImports`) ([IJPL-198789](https://youtrack.jetbrains.com/issue/IJPL-198789))
+- Rename Refactoring ([`textDocument/rename`](https://microsoft.github.io/language-server-protocol/specification/#textDocument_rename)) [2026.1.1] ([IJPL-161013](https://youtrack.jetbrains.com/issue/IJPL-161013))
+- On-Type Formatting ([`textDocument/onTypeFormatting`](https://microsoft.github.io/language-server-protocol/specification/#textDocument_onTypeFormatting)) [2026.1.2] (disabled by default) ([IJPL-189559](https://youtrack.jetbrains.com/issue/IJPL-189559))
 
 > All the above features are enabled by default and can be controlled via `LspServerDescriptor.getLspCustomization()`.
 > See the [Customization](#customization) section for details.
@@ -299,6 +301,9 @@ For example, see [`PrismaLspServerDescriptor`](%gh-ij-plugins%/prisma/src/org/in
 The new API is backward-compatible.
 Plugin LSP customizations implemented via deprecated `LspServerDescriptor`'s properties will work in 2025.2.
 New LSP features will be customizable only via the new API.
+
+Starting with 2026.1.2, on-type formatting ([`textDocument/onTypeFormatting`](https://microsoft.github.io/language-server-protocol/specification/#textDocument_onTypeFormatting)) is the first LSP feature disabled by default.
+Review your servers and enable `LspOnTypeFormattingSupport` via `LspServerDescriptor.lspCustomization` where formatting while typing is appropriate.
 
 </tab>
 

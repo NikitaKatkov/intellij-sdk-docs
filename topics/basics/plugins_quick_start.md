@@ -16,7 +16,7 @@ It will familiarize you with the working environment, project structure, and fre
 * [](plugin_required_experience.md)
 * [](plugin_types.md)
 * [](developing_plugins.md)
-* [](split_mode_for_remote_development.md)
+* [](split_mode_and_remote_development.md)
 * [](plugin_structure.topic)
 * [Implementing Plugin in Kotlin](using_kotlin.md)
 * [](plugin_signing.md)

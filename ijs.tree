@@ -45,7 +45,7 @@
       <toc-element topic="plugin_signing.md"/>
       <toc-element topic="publishing_plugin.md" accepts-web-file-names="deployment.html"/>
     </toc-element>
-    <toc-element topic="split_mode_for_remote_development.md">
+    <toc-element topic="split_mode_and_remote_development.md" accepts-web-file-names="split-mode-for-remote-development.html">
       <toc-element topic="modular_plugins.md"/>
       <toc-element topic="split_mode_feature_development.md"/>
       <toc-element topic="remote_procedure_calls.md"/>

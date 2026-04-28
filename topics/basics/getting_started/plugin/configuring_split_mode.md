@@ -4,7 +4,7 @@
 
 <link-summary>Configure Gradle so a plugin can run, debug, and test with separate frontend and backend processes.</link-summary>
 
-Split Mode configuration in the Gradle build script allows for running development sandbox IDEs in mode emulating the [remote development](split_mode_for_remote_development.md) scenario, with both frontend and backend processes running locally.
+Split Mode configuration in the Gradle build script allows for running development sandbox IDEs in mode emulating the [remote development](split_mode_and_remote_development.md) scenario, with both frontend and backend processes running locally.
 To make a plugin work natively in split mode, see [plugin modularization](modular_plugins.md).
 
 ## Basic Configuration
@@ -18,18 +18,18 @@ Enable Split Mode in the `intellijPlatform {}` extension:
 ```kotlin
 intellijPlatform {
   splitMode = true
-  splitModeTarget = SplitModeAware.SplitModeTarget.BOTH
+  pluginInstallationTarget = SplitModeAware.PluginInstallationTarget.BOTH
 }
 ```
 
 The two relevant properties are:
 
 - [`splitMode`](tools_intellij_platform_gradle_plugin_extension.md#intellijPlatform-splitMode) – starts separate frontend and backend processes
-- [`splitModeTarget`](tools_intellij_platform_gradle_plugin_extension.md#intellijPlatform-splitModeTarget) – selects where the plugin is installed
+- [`pluginInstallationTarget`](tools_intellij_platform_gradle_plugin_extension.md#intellijPlatform-pluginInstallationTarget) – selects where the plugin is installed
 
 ## Choosing the Installation Target
 
-Choose `splitModeTarget` according to the code being exercised:
+Choose `pluginInstallationTarget` according to the code being exercised:
 
 - `BACKEND` for backend-only functionality
 - `FRONTEND` for frontend-only functionality
@@ -37,7 +37,7 @@ Choose `splitModeTarget` according to the code being exercised:
 
 For split plugin development, `BOTH` is the most common choice.
 
-> `splitModeTarget` only controls where the plugin is placed in locally run development sandboxes.
+> `pluginInstallationTarget` only controls where the plugin is placed in locally run development sandboxes.
 > It doesn't describe end-user installation or synchronization behavior in split mode.
 > See [Plugin Management](plugin_management_in_split_mode.md).
 >
@@ -50,12 +50,12 @@ Custom split-mode tasks can be declared with `intellijPlatformTesting`:
 ```kotlin
 val runIdeSplitMode by intellijPlatformTesting.runIde.registering {
   splitMode = true
-  splitModeTarget = SplitModeAware.SplitModeTarget.BOTH
+  pluginInstallationTarget = SplitModeAware.PluginInstallationTarget.BOTH
 }
 
 val testIdeUiSplitMode by intellijPlatformTesting.testIdeUi.registering {
   splitMode = true
-  splitModeTarget = SplitModeAware.SplitModeTarget.BOTH
+  pluginInstallationTarget = SplitModeAware.PluginInstallationTarget.BOTH
 }
 ```
 
@@ -66,3 +66,25 @@ See [](tools_intellij_platform_gradle_plugin_testing_extension.md) for more deta
 
 After the Gradle configuration is in place, the next step is deciding how the plugin code should be distributed between frontend, backend, and shared modules.
 See [](split_mode_feature_development.md).
+
+## Required Gradle Plugin and Library Versions
+
+The following tables list recommended versions of Gradle plugins and libraries for split mode development, tailored for compatibility with the specified IntelliJ Platform versions.
+
+### Gradle Plugins
+
+| **IntelliJ Platform** | `rpc`          | `org.jetbrains.kotlin.plugin.serialization` |
+|-----------------------|----------------|---------------------------------------------|
+| **2026.1**            | 2.3.20-RC2-0.1 | 2.3.20                                      |
+| **2025.3**            | 2.1.20-0.1     | 2.1.20                                      |
+
+{style=header-column}
+
+
+### Libraries
+
+| **IntelliJ Platform** | `kotlinx-serialization-core-jvm` | `kotlinx-serialization-json-jvm` |
+|-----------------------|----------------------------------|----------------------------------|
+| **2026.1**            | 1.9.0                            | 1.9.0                            |
+| **2025.3**            | 1.7.3                            | 1.7.3                            |
+{style=header-column}

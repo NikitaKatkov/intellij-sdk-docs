@@ -3,18 +3,7 @@ import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
   id("java")
-  id("org.jetbrains.intellij.platform") version "2.14.0"
-}
-
-group = "org.intellij.sdk"
-version = "2.0.0"
-
-repositories {
-  mavenCentral()
-
-  intellijPlatform {
-    defaultRepositories()
-  }
+  id("org.jetbrains.intellij.platform")
 }
 
 dependencies {
@@ -27,22 +16,4 @@ dependencies {
   }
 
   testImplementation("junit:junit:4.13.2")
-  // workaround for <2024.3
-  // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-faq.html#missing-opentest4j-dependency-in-test-framework
-  testImplementation("org.opentest4j:opentest4j:1.3.0")
-}
-
-intellijPlatform {
-  buildSearchableOptions = false
-
-  pluginConfiguration {
-    ideaVersion {
-      sinceBuild = "252"
-    }
-  }
-  pluginVerification  {
-    ides {
-      recommended()
-    }
-  }
 }

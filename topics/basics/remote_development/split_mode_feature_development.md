@@ -12,7 +12,7 @@
 
 </tldr>
 
-This page describes a practical flow for implementing new or refactoring an existing feature to make it work natively in [Split Mode](split_mode_for_remote_development.md) and behave the same in a monolithic IDE.
+This page describes a practical flow for implementing new or refactoring an existing feature to make it work natively in [Split Mode](split_mode_and_remote_development.md) and behave the same in a monolithic IDE.
 The steps apply both when migrating an existing plugin and when designing a new one:
 
 1. [**Module Structure**](#1-identify-or-create-necessary-plugin-modules) — Ensure shared, frontend, and backend modules are present.
@@ -87,7 +87,7 @@ There are serializable (in terms of `kotlinx.serialization` framework) DTO class
 4. Call the RPC where the backend data is required.
    - It is a crucial detail that RPC calls are always suspending.
      It may be impossible to use suspending code in a particular place in the frontend functionality, either because it is an old implementation written in Java and is not ready for suspend functions at all, or because the data must be available immediately, otherwise causing poor UX or even freezes.
-     Remember that a proper UX is one of the main reasons we initiated the entire splitting process for, see the [split-mode introduction](split_mode_for_remote_development.md).
+     Remember that a proper UX is one of the main reasons we initiated the entire splitting process for, see the [split-mode introduction](split_mode_and_remote_development.md).
    - RPC can't be called on [EDT](threading_model.md).
      Avoid wrapping it in `runBlockingCancellable` unless it is absolutely necessary, and you understand all the consequences of such a decision, namely blocking the caller thread and breaking the structured concurrency and suspending API concepts.
    - Consider using the existing platform abstraction for shared state as a reference: [FlowWithHistory.kt](https://github.com/JetBrains/intellij-community/blob/1c3952828ff3af2d18f99a6721c48bb22f97bd57/platform/lang-impl/src/com/intellij/build/FlowWithHistory.kt).
@@ -106,7 +106,7 @@ Frontend UI exchanges serializable data with backend via RPC or RemoteTopic API.
 ## 5. Verify and Polish
 
 After all infrastructure has been implemented, it is time to verify the feature behavior and polish it.
-Refer to [Introduction into Split Mode / Remote Development](split_mode_for_remote_development.md) on how to manually test Split Mode and check the monolithic IDE as well – the behavior is expected to be exactly the same.
+Refer to [Introduction into Split Mode / Remote Development](split_mode_and_remote_development.md) on how to manually test Split Mode and check the monolithic IDE as well – the behavior is expected to be exactly the same.
 
 **Expected Outcome**<br>
 The code is valid from the point of view of this guide, and the feature works as expected in both Split Mode and a monolithic IDE.
@@ -142,7 +142,7 @@ Known issues are mitigated, and the plugin quality is now good enough.
 ## 7. Add Tests
 
 Fix the split feature behavior and quality with unit and integration tests if you have not used the TDD approach earlier.
-See the [](split_mode_for_remote_development.md#running-tests-in-split-mode) section.
+See the [](split_mode_and_remote_development.md#running-tests-in-split-mode) section.
 
 We suggest paying attention to:
 

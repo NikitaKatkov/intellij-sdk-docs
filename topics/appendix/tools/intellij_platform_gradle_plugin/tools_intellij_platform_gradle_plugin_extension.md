@@ -189,14 +189,14 @@ See also:
 ### `splitMode`
 {#intellijPlatform-splitMode}
 
-> [Split Mode](split_mode_for_remote_development.md) requires the IntelliJ Platform in version `241.14473` or later.
+> [Split Mode](split_mode_and_remote_development.md) requires the IntelliJ Platform in version `2025.3` or later.
 >
 {style="warning"}
 
 Allows for checking how a plugin works in remote development mode, when one machine is running the backend part and another is running a frontend part (JetBrains Client) which connects to the backend.
 
 This property allows running the IDE with backend and frontend parts running in separate processes.
-Use [`splitModeTarget`](#intellijPlatform-splitModeTarget) to specify whether the developed plugin is installed in the frontend, backend, or both parts.
+Use [`pluginInstallationTarget`](#intellijPlatform-pluginInstallationTarget) to specify whether the developed plugin is installed in the frontend, backend, or both parts.
 
 {type="narrow"}
 Type
@@ -209,22 +209,22 @@ See also:
 - [Task Awares: `SplitModeAware`](tools_intellij_platform_gradle_plugin_task_awares.md#SplitModeAware)
 
 
-### `splitModeTarget`
-{#intellijPlatform-splitModeTarget}
+### `pluginInstallationTarget` (formerly `splitModeTarget`)
+{#intellijPlatform-pluginInstallationTarget}
 
-> [Split Mode](split_mode_for_remote_development.md) requires the IntelliJ Platform in version `241.14473` or later.
+> [Split Mode](split_mode_and_remote_development.md) requires the IntelliJ Platform in version `241.14473` or later.
 >
 {style="warning"}
 
 Specifies in which part of the product the developed plugin should be installed.
-The default is backend-only, but [split plugins](split_mode_for_remote_development.md) often use `BOTH`.
+The default is backend-only, but [split plugins](split_mode_and_remote_development.md) often use `BOTH`.
 
 {type="narrow"}
 Type
-: [`Property<SplitModeTarget>`](tools_intellij_platform_gradle_plugin_types.md#SplitModeAware-SplitModeTarget)
+: [`Property<PluginInstallationTarget>`](tools_intellij_platform_gradle_plugin_types.md#SplitModeAware-PluginInstallationTarget)
 
 Default value
-: [`SplitModeTarget.BACKEND`](tools_intellij_platform_gradle_plugin_types.md#SplitModeAware-SplitModeTarget)
+: [`PluginInstallationTarget.BACKEND`](tools_intellij_platform_gradle_plugin_types.md#SplitModeAware-PluginInstallationTarget)
 
 See also:
 - [Task Awares: `SplitModeAware`](tools_intellij_platform_gradle_plugin_task_awares.md#SplitModeAware)
