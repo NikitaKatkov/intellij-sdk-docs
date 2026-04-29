@@ -61,7 +61,7 @@ These include:
 * Completion contributors
 * Reference providers
 * Run configurations
-* Find usages providers
+* Find Usages providers
 * Inlays
 
 Usually, non-split plugins depend on plugins and modules that can be run only on the backend, forcing the plugin to be loaded on the backend only.
@@ -145,14 +145,14 @@ To add it in an existing project, use the steps below.
 
 <procedure title="Creating the Run IDE (Split Mode) Run Configuration">
 
-1. Make sure you are using the IntelliJ Platform Gradle Plugin version 2.14 or higher
-2. Call the `:generateSplitModeRunConfigurations` task via Execute Gradle Task action or via terminal
-3. Once finished, the task will produce a compound `Run IDE (Split Mode)` run configuration that can be selected in the run widget and used for debugging or running as usual
-4. Starting with IntelliJ Platform Gradle Plugin 2.15.0, the run generated run configurations show the full backend or frontend IDE log files in additional tabs
+1. Make sure you are using the IntelliJ Platform Gradle Plugin version 2.14 or higher.
+2. Call the `:generateSplitModeRunConfigurations` task via Execute Gradle Task action or via terminal.
+3. Once finished, the task will produce a compound `Run IDE (Split Mode)` run configuration that can be selected in the run widget and used for debugging or running as usual.
+   > Starting with IntelliJ Platform Gradle Plugin 2.15.0, generated run configurations show the full backend or frontend IDE log files in additional tabs.
 
 </procedure>
 
-To enable additional `DEBUG` or `TRACE` logging categories for the split-mode backend or frontend process, configure the `runIdeBackend` and `runIdeFrontend` tasks in the Gradle build script as described in [Configuring a Plugin for Split Mode](configuring_split_mode.md).
+To enable additional `DEBUG` or `TRACE` logging categories for the split-mode backend or frontend process, configure the `runIdeBackend` and `runIdeFrontend` tasks in the Gradle build script as described in [](configuring_split_mode.md#configuring-debug-and-trace-logs).
 
 ## Testing Split Mode Manually and Emulating Latency
 
@@ -164,7 +164,7 @@ Deploying the backend to a real remote machine is not the easiest or fastest way
 2. Open the **Split Mode** widget in the upper left corner of the target IDE.
 3. Switch to the **Connection Config (internal)** tab.
 4. Select the **Enable Connection Widget** checkbox.
-3. Specify a reasonably large custom value in the **Direct Ping** field - this will delay all communication that goes through RPC in the entire IDE.
+5. Specify a reasonably large custom value in the **Direct Ping** field - this will delay all communication that goes through RPC in the entire IDE.
 
    ![Split Mode widget in the IDE](remdev_split_mode_widget.png){width=706}
 
